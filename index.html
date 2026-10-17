@@ -48,6 +48,14 @@ p{margin:0}.mut{color:var(--mut)}.small{font-size:14px}
 .st.g{background:var(--g);color:#fff}.st.y{background:var(--y);color:#1b1400}.st.r{background:var(--r);color:#fff}
 .pend{align-self:flex-start;border:1px solid var(--mut);border-radius:6px;padding:0 7px;font-weight:500}
 [hidden]{display:none!important}
+.swc{display:flex;flex-direction:column;align-items:center;gap:10px;background:var(--in);border:1px solid var(--line);border-radius:12px;padding:16px}
+.swd{font:600 46px/1 Barlow,system-ui,sans-serif;font-variant-numeric:tabular-nums;letter-spacing:.5px}
+.swbig{width:100%;min-height:56px;font-size:18px}
+.swb{margin-top:6px;min-height:44px;width:100%}
+.btn.run{background:var(--r)!important;border-color:var(--r)!important;color:#fff!important}
+.f3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:4px}
+.f3 label{display:flex;flex-direction:column;gap:3px;font-size:14px;color:var(--mut)}
+.btn:disabled{opacity:.55;cursor:default}
 body:not([data-role="admin"]) .adm{display:none!important}
 .sync{display:flex;align-items:center;gap:8px;border:0;background:none;color:var(--mut);font:500 14px Barlow,system-ui,sans-serif;padding:0 0 12px;cursor:pointer;text-align:left}
 .sync i{flex:none;width:9px;height:9px;border-radius:50%;background:var(--g)}
@@ -58,7 +66,7 @@ body:not([data-role="admin"]) .adm{display:none!important}
 .mact{display:flex;gap:10px;flex-wrap:wrap}
 a.btn{text-decoration:none;display:inline-block;text-align:center}
 .res{background:var(--in);border:1px solid var(--line);border-radius:10px;padding:10px 12px;display:flex;flex-direction:column;gap:3px;font-size:15px}
-.res b{font-size:18px}.res b.bn{font-size:26px;color:var(--acc)}
+.res b{font-size:18px;white-space:nowrap}.res b.bn{font-size:26px;color:var(--acc)}
 .stp{font-size:14px;color:var(--mut)}
 .wb{display:flex;gap:10px}.wb .btn{flex:1}
 .chk{display:flex;flex-direction:row;gap:10px;align-items:center;font-size:16px;color:var(--ink);padding:6px 0}
@@ -76,7 +84,7 @@ table.sm{width:100%;border-collapse:collapse;font-size:14px}table.sm td{padding:
 .tp{display:block;margin:4px 0}
 select{font:inherit;color:var(--ink);background:var(--in);border:1px solid var(--line);border-radius:8px;padding:4px 6px}
 .empty{grid-column:1/-1;text-align:center;padding:36px 12px;color:var(--mut)}
-dialog{width:min(640px,100%);max-height:92dvh;border:0;border-radius:16px;padding:0;background:var(--bg);color:var(--ink);overflow:auto}
+dialog{width:min(640px,100%);max-width:100%;max-height:92dvh;border:0;border-radius:16px;padding:0;background:var(--bg);color:var(--ink);overflow:auto}
 dialog::backdrop{background:rgba(8,14,20,.6)}
 @media(max-width:600px){dialog{margin:auto 0 0;border-radius:16px 16px 0 0;max-height:94dvh}}
 .sheet{padding:16px 16px calc(20px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:14px}
@@ -338,37 +346,68 @@ render();
 /* ===== Calibração guiada · balança de fluxo e dosadora ===== */
 const pn=v=>parseFloat(String(v==null?'':v).replace(',','.'));
 const fmt=(v,d=3)=>isFinite(v)?Number(v).toLocaleString('pt-BR',{maximumFractionDigits:d}):'-';
-const FL={e1:['Executante 1'],e2:['Executante 2'],b04:['B-04 · Pulsos por metro','pulsos/m'],c02:['C-02 · Tempo de volta','s'],c05:['C-05 · Comprimento da mesa','m'],c08:['C-08 · Peso padrão','kg'],d02:['D-02 · Fator de correção'],d06:['D-06 · Pulsos por volta','pulsos'],tot:['Totalização da balança'],t1:['Tempo encontrado','s'],tv:['Tempo de volta aferido','s'],d06n:['Novo D-06 (Input Belt)','pulsos'],k1:['Tara 01'],k2:['Tara 02'],d02n:['Novo D-02 · Fator de correção'],t2:['Tempo encontrado','s'],p1:['Linha 1 · Pedido','t/h'],s1:['Linha 1 · Tempo de volta','s'],p2:['Linha 2 · Pedido','t/h'],s2:['Linha 2 · Tempo de volta','s'],p3:['Linha 1 · Pedido','t/h'],s3:['Linha 1 · Tempo de volta','s'],p4:['Linha 2 · Pedido','t/h'],s4:['Linha 2 · Tempo de volta','s']};
-const TXT=['e1','e2','k1','k2','tot','data'];
-const CK=['Balança voltada para gravimétrico','Balança desabilitada','Pesos guardados','Totalização restaurada','Balança liberada para operação'];
+const FL={e1:['Executante 1'],e2:['Executante 2'],b04:['B-04 · Pulsos por metro','pulsos/m'],c02:['C-02 · Tempo de volta','s'],c05:['C-05 · Comprimento da mesa','m'],c08:['C-08 · Peso padrão','kg'],d02:['D-02 · Fator de correção'],d06:['D-06 · Pulsos por volta','pulsos'],t1:['Tempo encontrado','s'],tv:['Tempo de volta aferido','s'],tv1:['Tempo 1','s'],tv2:['Tempo 2','s'],tv3:['Tempo 3','s'],d06n:['Novo D-06 (Input Belt)','pulsos'],k1:['Tara 01'],k2:['Tara 02'],d02n:['Novo D-02 · Fator de correção'],t2:['Tempo encontrado','s'],p1:['Linha 1 · Pedido','t/h'],s1:['Linha 1 · Tempo de volta','s'],p2:['Linha 2 · Pedido','t/h'],s2:['Linha 2 · Tempo de volta','s'],p3:['Linha 1 · Pedido','t/h'],s3:['Linha 1 · Tempo de volta','s'],p4:['Linha 2 · Pedido','t/h'],s4:['Linha 2 · Tempo de volta','s']};
+const TXT=['e1','e2','k1','k2','data'];
+const CK=['Balança voltada para gravimétrico','Teclado desabilitado','Pesos guardados','Totalização restaurada','Balança liberada para operação'];
 const WS={
-  flu:[{id:'dados',t:'Dados iniciais',f:['e1','e2','b04','c02','c05','c08','d02','d06','tot']},{id:'ei',t:'Erro inicial',f:['t1']},{id:'vol',t:'Volumétrico',f:['tv']},{id:'belt',t:'Input Belt',f:['d06n']},{id:'tara',t:'Tara',f:['k1','k2']},{id:'chk',t:'Check weight',f:['d02n']},{id:'ef',t:'Erro final',f:['t2']},{id:'fim',t:'Encerramento',f:[]}],
-  dos:[{id:'dados',t:'Dados iniciais',f:['e1','e2','b04','c02','c05','c08','d02','d06']},{id:'ei',t:'Erro inicial',f:['p1','s1','p2','s2']},{id:'belt',t:'Input Belt',f:['d06n']},{id:'tara',t:'Tara',f:['k1','k2']},{id:'chk',t:'Check weight',f:['d02n']},{id:'ef',t:'Erro final',f:['p3','s3','p4','s4']},{id:'fim',t:'Encerramento',f:[]}]};
+  flu:[{id:'dados',t:'Dados iniciais',f:['e1','e2','b04','c02','c05','c08','d02','d06']},{id:'ei',t:'Erro inicial',f:['t1']},{id:'vol',t:'Volumétrico',f:['tv1','tv2','tv3']},{id:'belt',t:'Input Belt',f:['d06n']},{id:'tara',t:'Tara',f:['k1','k2']},{id:'chk',t:'Check weight',f:['d02n']},{id:'ef',t:'Erro final',f:['t2']},{id:'fim',t:'Encerramento',f:[]}],
+  dos:[{id:'dados',t:'Dados iniciais',f:['e1','e2','b04','c02','c05','c08','d02','d06']},{id:'ei',t:'Erro inicial',f:['p1','s1','p2','s2']},{id:'vol',t:'Volumétrico',f:['tv1','tv2','tv3']},{id:'belt',t:'Input Belt',f:['d06n']},{id:'tara',t:'Tara',f:['k1','k2']},{id:'chk',t:'Check weight',f:['d02n']},{id:'ef',t:'Erro final',f:['p3','s3','p4','s4']},{id:'fim',t:'Encerramento',f:[]}]};
 const WI={
   dados:'Informe os parâmetros atuais do módulo (coleta de parâmetros).',
-  ei:{flu:'Zere o totalizador da balança e cronometre o tempo até o totalizador indicar o valor em destaque abaixo. Informe o tempo encontrado.',dos:'SEM OS PESOS. Passe a balança para volumétrico, habilite o teclado e faça o pedido de meio de faixa. Aferir o tempo de volta e informe o pedido e o tempo de volta de cada linha.'},
-  vol:'Passe a balança para volumétrico e habilite o teclado. Aferir o tempo de volta e informe abaixo.',
+  ei:{flu:'COM OS PESOS. Zere o totalizador da balança e cronometre o tempo até o totalizador indicar o valor em destaque abaixo. Informe o tempo encontrado.',dos:'COM OS PESOS. Afira o tempo de volta e informe o pedido e o tempo de volta de cada linha.'},
+  vol:{flu:'Passe a balança para volumétrico e habilite o teclado. Aferir o tempo de volta e informe abaixo.',dos:'Passe a balança para volumétrico e habilite o teclado, fazer o pedido meio de faixa. Aferir o tempo de volta e informe abaixo'},
   belt:{flu:'Faça o Input Belt no módulo e informe o novo valor de D-06 (pulsos por volta). Digite no módulo o novo B-04 calculado abaixo.',dos:'SEM OS PESOS. Faça o Input Belt no módulo e informe o novo valor de D-06 (pulsos por volta). Digite no módulo o novo B-04 calculado abaixo.'},
   tara:{flu:'Realize o procedimento de tara duas vezes, sem os pesos padrão, e informe os resultados.',dos:'SEM OS PESOS. Realize o procedimento de tara duas vezes, sem os pesos padrão, e informe os resultados.'},
   chk:{flu:'Com o peso padrão na balança, faça o check weight e informe o novo fator de correção (D-02).',dos:'COM OS PESOS. Com o peso padrão na balança, faça o check weight e informe o novo fator de correção (D-02).'},
-  ef:{flu:'Volte a balança para gravimétrico. Zere o totalizador e cronometre o tempo até o totalizador indicar o valor em destaque abaixo. Informe o tempo encontrado.',dos:'Volte a balança para gravimétrico e informe o pedido e o tempo de volta de cada linha.'}
+  ef:{flu:'COM OS PESOS. Volte a balança para gravimétrico. Zere o totalizador e cronometre o tempo até o totalizador indicar o valor em destaque abaixo. Informe o tempo encontrado.',dos:'COM OS PESOS. Volte a balança para gravimétrico e informe o pedido e o tempo de volta de cada linha.'}
 };
 const okf=k=>TXT.includes(k)?String(w[k]||'').trim()!=='':pn(w[k])>0;
 let w=null,wsid=null,wDone=false,wLast=null;
 function calc(w){
   const cor=pn(w.d06)/pn(w.b04),vel=cor/pn(w.c02),Q=vel*3.6*pn(w.c08)/pn(w.c05),T=2*pn(w.c02),tons=Q*T/3600;
   const fe=t=>cor/pn(t)*3.6*pn(w.c08)/pn(w.c05),er=(p,s)=>(fe(s)/pn(p)-1)*100;
-  const o={cor,vel,Q,T,tons,b04n:pn(w.d06n)/cor,dd:(pn(w.d02n)-pn(w.d02))/pn(w.d02)*100,dv:(pn(w.tv)-pn(w.c02))/pn(w.c02)*100};
+  const tvs=[w.tv1,w.tv2,w.tv3].map(pn).filter(v=>v>0),tv=tvs.length===3?(tvs[0]+tvs[1]+tvs[2])/3:pn(w.tv);
+  const o={cor,vel,Q,T,tons,tv,tvs,b04n:pn(w.d06n)/cor,dd:(pn(w.d02n)-pn(w.d02))/pn(w.d02)*100,dv:(tv-pn(w.c02))/pn(w.c02)*100};
   if(w.tp==='dos'){
     o.f=[1,2,3,4].map(i=>fe(w['s'+i]));o.e=[1,2,3,4].map(i=>er(w['p'+i],w['s'+i]));
     o.ei=(o.e[0]+o.e[1])/2;o.ef=(o.e[2]+o.e[3])/2;
   }else{o.ei=(pn(w.t1)/T-1)*100;o.ef=(pn(w.t2)/T-1)*100}
   return o;
 }
-const inp=k=>`<label>${FL[k][0]}${FL[k][1]?' ('+FL[k][1]+')':''}<input data-k='${k}' ${k[0]==='e'?'':'inputmode=decimal'} value='${esc(w[k])}' autocomplete='off'></label>`;
+const SWK=['t1','t2','s1','s2','s3','s4'];
+const inp=k=>`<label>${FL[k][0]}${FL[k][1]?' ('+FL[k][1]+')':''}<input data-k='${k}' ${k[0]==='e'?'':'inputmode=decimal'} value='${esc(w[k])}' autocomplete='off'>${SWK.includes(k)?`<button type='button' class='btn swb' data-sw='${k}'>Cronometrar</button>`:''}</label>`;
+const volCard=()=>`<div class='swc'><div class='swd' data-swd>0,00 s</div><button type='button' class='btn pri swbig' data-sw='vol'>Iniciar tomada 1</button><p class='small mut' style='text-align:center'>Afira 3 voltas da correia. O app usa a média dos 3 tempos.</p></div><div class='f3'>${['tv1','tv2','tv3'].map(inp).join('')}</div><button type='button' class='lnk' data-swclr>Limpar os 3 tempos</button>`;
+/* cronômetro: marca pela hora do aparelho, então continua certo mesmo se a tela apagar */
+let sw=null,swLast=0;
+const swFmt=x=>x.toFixed(2).replace('.',',');
+function swPaint(){
+  if(!w)return;
+  document.querySelectorAll('#wBody [data-sw]').forEach(b=>{
+    const k=b.dataset.sw,run=!!(sw&&sw.k===k),x=run?(Date.now()-sw.t0)/1000:0;
+    b.classList.toggle('run',run);
+    if(k==='vol'){
+      const n=['tv1','tv2','tv3'].filter(q=>pn(w[q])>0).length;
+      b.disabled=!run&&n>=3;
+      b.textContent=run?'Parar':(n>=3?'3 tempos registrados':'Iniciar tomada '+(n+1));
+    }else b.textContent=run?'Parar · '+swFmt(x)+' s':'Cronometrar';
+  });
+  const d=$('#wBody [data-swd]');if(d)d.textContent=swFmt(sw&&sw.k==='vol'?(Date.now()-sw.t0)/1000:swLast)+' s';
+}
+function swStart(k){swStop(false);sw={k,t0:Date.now()};sw.iv=setInterval(swPaint,50);swPaint()}
+function swStop(save){
+  if(!sw)return;
+  clearInterval(sw.iv);const x=(Date.now()-sw.t0)/1000,k=sw.k;sw=null;
+  if(save&&w){
+    const tk=k==='vol'?['tv1','tv2','tv3'].find(q=>!(pn(w[q])>0)):k;
+    if(tk){w[tk]=swFmt(x);const i=$('#wBody [data-k='+tk+']');if(i)i.value=w[tk];const er=$('#wErr');if(er)er.textContent=''}
+    if(k==='vol')swLast=x;
+    wLive();
+  }
+  swPaint();
+}
 function wizOpen(){
   const s=scales.find(x=>x.id===openId);wsid=s.id;wDone=false;
-  const dr=getDraft(s.id);w=dr&&dr.v===2?dr:{v:2,step:0,tp:s.tipo,data:iso(new Date())};
+  const dr=getDraft(s.id);w=dr&&dr.v===3?dr:{v:3,step:0,tp:s.tipo,data:iso(new Date())};
   wRender();$('#dWiz').showModal();$('#dWiz').scrollTop=0;
 }
 function wSave(){const s=scales.find(x=>x.id===wsid);if(!s||wDone||!w)return;setDraft(wsid,w);if($('#dSc').open&&openId===wsid)renderDetail()}
@@ -376,11 +415,11 @@ function wLive(){
   const el=$('#wLive');if(!el)return;
   const c=calc(w),id=WS[w.tp][w.step].id,dos=w.tp==='dos',R=h=>`<div class='res'>${h}</div>`;
   const ex=R(`<span>Velocidade (correia ÷ tempo de volta): <b>${fmt(c.vel,4)} m/s</b></span><span>Fluxo calculado (1 h): <b>${fmt(c.Q)} t/h</b></span><span>Tempo de 2 voltas: <b>${fmt(c.T)} s</b></span><span>Totalizar em 2 voltas: <b class='bn'>${fmt(c.tons,4)} t</b></span>`);
-  const rows=a=>R(`<span>Fluxo calculado de referência: <b>${fmt(c.Q)} t/h</b></span>`)+R(a.map(i=>`<span>Linha ${i%2+1}: fluxo encontrado <b>${fmt(c.f[i])} t/h</b> · erro <b>${fmt(c.e[i])} %</b></span>`).join(''));
+  const rows=a=>R(a.map(i=>`<span>Linha ${i%2+1}: fluxo encontrado <b>${fmt(c.f[i])} t/h</b> · erro <b>${fmt(c.e[i])} %</b></span>`).join(''));
   let h='';
   if(id==='dados')h=R(`<span>Comprimento da correia = D-06 ÷ B-04: <b>${fmt(c.cor,4)} m</b></span><span>Velocidade = correia ÷ tempo de volta: <b>${fmt(c.vel,4)} m/s</b></span>`);
   else if(id==='ei')h=dos?rows([0,1])+R(`<span>Erro inicial (média): <b>${fmt(c.ei)} %</b></span>`):ex+R(`<span>Erro inicial: <b>${fmt(c.ei)} %</b></span>`);
-  else if(id==='vol')h=R(`<span>Diferença em relação ao C-02: <b>${fmt(c.dv)} %</b></span>`);
+  else if(id==='vol')h=R(c.tvs.length===3?`<span>Tempo de volta (média de 3): <b class='bn'>${fmt(c.tv,3)} s</b></span><span>Diferença em relação ao C-02: <b>${fmt(c.dv)} %</b></span>`:`<span>Tempos registrados: <b>${c.tvs.length} de 3</b></span>`);
   else if(id==='belt')h=R(`<span>Novo B-04 = novo D-06 ÷ comprimento da correia: <b class='bn'>${fmt(c.b04n)} pulsos/m</b></span>`);
   else if(id==='chk')h=R(`<span>Variação do D-02: <b>${fmt(c.dd)} %</b></span>`);
   else if(id==='ef')h=dos?rows([2,3])+R(`<span>Erro final (média): <b>${fmt(c.ef)} %</b></span>`):ex+R(`<span>Erro final: <b>${fmt(c.ef)} %</b></span>`);
@@ -388,20 +427,21 @@ function wLive(){
 }
 function wSum(){
   const c=calc(w),dos=w.tp==='dos',m=dos?' (média)':'';
-  const rw=[['Erro inicial',fmt(c.ei)+' %'+m],['Erro final',fmt(c.ef)+' %'+m],['Comprimento da correia',fmt(c.cor,4)+' m'],['Novo B-04',fmt(c.b04n)+' pulsos/m'],['Novo D-06',w.d06n+' pulsos'],['Novo D-02',w.d02n+' ('+fmt(c.dd)+' %)'],['Taras',w.k1+' / '+w.k2],['Executantes',w.e1+' e '+w.e2]];
+  const rw=[['Erro inicial',fmt(c.ei)+' %'+m],['Erro final',fmt(c.ef)+' %'+m],['Comprimento da correia',fmt(c.cor,4)+' m'],['Tempo de volta aferido (média)',fmt(c.tv,3)+' s'],['Tempos de volta (3 tomadas)',[w.tv1,w.tv2,w.tv3].join(' / ')+' s'],['Novo B-04',fmt(c.b04n)+' pulsos/m'],['Novo D-06',w.d06n+' pulsos'],['Novo D-02',w.d02n+' ('+fmt(c.dd)+' %)'],['Taras',w.k1+' / '+w.k2],['Executantes',w.e1+' e '+w.e2]];
   if(!dos)rw.splice(2,0,['Totalizar em 2 voltas',fmt(c.tons,4)+' t em '+fmt(c.T)+' s'],['Tempo encontrado inicial / final',fmt(pn(w.t1))+' s / '+fmt(pn(w.t2))+' s']);
-  const ck=CK.map((t,i)=>`<label class='chk'><input type='checkbox' data-ck='${i}'${w.ck&&w.ck[i]?' checked':''}>${t}${i===3&&!dos&&w.tot?' (valor: '+esc(w.tot)+')':''}</label>`).join('');
+  const ck=CK.map((t,i)=>`<label class='chk'><input type='checkbox' data-ck='${i}'${w.ck&&w.ck[i]?' checked':''}>${t}</label>`).join('');
   return `<table class='sm'>${rw.map(r=>`<tr><td>${r[0]}</td><td>${esc(r[1])}</td></tr>`).join('')}</table><div><p class='small mut'>Confirme o encerramento:</p>${ck}</div><label class='small mut' style='display:flex;flex-direction:column;gap:3px'>Observações<textarea data-k='obs' maxlength='500'>${esc(w.obs)}</textarea></label>`;
 }
 function wRender(){
+  swStop(false);swLast=0;
   const L=WS[w.tp],i=w.step,st=L[i],id=st.id,s=scales.find(x=>x.id===wsid);
   let h=`<div class='sh'><div><h2>${esc(s.nome)}</h2><p class='stp'>Balança ${w.tp==='dos'?'dosadora':'de fluxo'} · ${st.t} · etapa ${i+1} de ${L.length}</p></div><button type='button' class='x' data-wx aria-label='Fechar'>×</button></div>`;
   if(id!=='fim'){
     const t=WI[id];
-    h+=`<p>${typeof t==='string'?t:t[w.tp]}</p>${id==='chk'?`<p class='hint'>Peso padrão: ${esc(w.c08)} kg. Lembre-se de colocar o peso na balança antes do check weight.</p>`:''}<div id='wLive' style='display:flex;flex-direction:column;gap:8px'></div><div class='f'>${id==='dados'?`<label class='w'>Data da calibração<input type='date' data-k='data' value='${esc(w.data)}'></label>`:''}${st.f.map(inp).join('')}</div>`;
+    h+=`<p>${typeof t==='string'?t:t[w.tp]}</p>${id==='chk'?`<p class='hint'>Peso padrão: ${esc(w.c08)} kg. Lembre-se de colocar o peso na balança antes do check weight.</p>`:''}<div id='wLive' style='display:flex;flex-direction:column;gap:8px'></div><div class='f'>${id==='dados'?`<label class='w'>Data da calibração<input type='date' data-k='data' value='${esc(w.data)}'></label>`:''}${id==='vol'?'':st.f.map(inp).join('')}</div>${id==='vol'?volCard():''}`;
   }else h+=wSum();
   h+=`<p class='small' id='wErr' style='color:var(--r)'></p><div class='wb'>${i>0?`<button class='btn' data-wb>Voltar</button>`:''}<button class='btn pri' data-wn>${id==='fim'?'Finalizar e salvar':'Próximo'}</button></div>`;
-  $('#wBody').innerHTML=h;wLive();
+  $('#wBody').innerHTML=h;wLive();swPaint();
 }
 function wNext(){
   const L=WS[w.tp],i=w.step,id=L[i].id,bad=L[i].f.concat(id==='dados'?['data']:[]).find(k=>!okf(k));
@@ -410,32 +450,35 @@ function wNext(){
     if(!(w.ck&&w.ck.filter(Boolean).length===CK.length)){$('#wErr').textContent='Marque todos os itens do encerramento.';return}
     wFinish();return;
   }
+  if(id==='vol')w.tv=String(+calc(w).tv.toFixed(3)).replace('.',',');
   w.step++;wSave();wRender();$('#dWiz').scrollTop=0;
 }
 function wFinish(){
   const s=clone(scales.find(x=>x.id===wsid)),c=calc(w),id='c'+Date.now().toString(36),rel=clone(w);
   delete rel.step;delete rel.v;
-  rel.res=clone({cor:c.cor,vel:c.vel,Q:c.Q,T:c.T,tons:c.tons,b04n:c.b04n,dd:c.dd,dv:c.dv,e:c.e,f:c.f});
+  rel.res=clone({cor:c.cor,vel:c.vel,Q:c.Q,T:c.T,tons:c.tons,tv:c.tv,b04n:c.b04n,dd:c.dd,dv:c.dv,e:c.e,f:c.f});
   s.cal=s.cal||[];
   s.cal.push({id,data:w.data,ei:+c.ei.toFixed(4),ef:+c.ef.toFixed(4),e1:w.e1.trim(),e2:w.e2.trim(),obs:(w.obs||'').trim(),rel});
   dropDraft(s.id);wDone=true;wLast=id;const pr=addCal(s,s.cal[s.cal.length-1]);
-  $('#wBody').innerHTML=`<div class='sh'><h2>Calibração salva</h2><button type='button' class='x' data-wclose aria-label='Fechar'>×</button></div><div class='res'><span>Erro inicial: <b>${fmt(c.ei)} %</b></span><span>Erro final: <b>${fmt(c.ef)} %</b></span></div><div class='wb'><p class='small mut' id='wEnv'>Enviando ao servidor…</p><div class='wb'><button class='btn pri' data-wpdf>Baixar PDF</button><button class='btn' data-wshare>Compartilhar</button></div><div class='wb'><a class='btn' href='https://wa.me/5531982613138?text=${encodeURIComponent(txtCurto(s,s.cal[s.cal.length-1])).replace(/'/g,'%27')}' target='_blank' rel='noopener'>WhatsApp (resumo)</a><button class='btn' data-wclose>Fechar</button></div>`;
+  $('#wBody').innerHTML=`<div class='sh'><h2>Calibração salva</h2><button type='button' class='x' data-wclose aria-label='Fechar'>×</button></div><div class='res'><span>Erro inicial: <b>${fmt(c.ei)} %</b></span><span>Erro final: <b>${fmt(c.ef)} %</b></span></div><p class='small mut' id='wEnv'>Enviando ao servidor…</p><div class='wb'><button class='btn pri' data-wpdf>Baixar PDF</button><button class='btn' data-wshare>Compartilhar</button></div><div class='wb'><a class='btn' href='https://wa.me/5531982613138?text=${encodeURIComponent(txtCurto(s,s.cal[s.cal.length-1])).replace(/'/g,'%27')}' target='_blank' rel='noopener'>WhatsApp (resumo)</a><button class='btn' data-wclose>Fechar</button></div>`;
   pr.then(r=>{const e=$('#wEnv');if(e)e.textContent=msgEnvio(r)});
 }
 $('#wBody').addEventListener('input',e=>{
   const t=e.target;
   if(t.dataset.ck!=null){w.ck=w.ck||[];w.ck[+t.dataset.ck]=t.checked;return}
-  const k=t.dataset.k;if(k){w[k]=t.value;wLive()}
+  const k=t.dataset.k;if(k){w[k]=t.value;wLive();if(/^tv[123]$/.test(k))swPaint();const er=$('#wErr');if(er)er.textContent=''}
 });
 $('#wBody').addEventListener('click',e=>{
   const t=e.target;
+  const sb=t.closest('[data-sw]');if(sb){e.preventDefault();const k=sb.dataset.sw;if(sw&&sw.k===k)swStop(true);else swStart(k);return}
+  if(t.closest('[data-swclr]')){['tv1','tv2','tv3'].forEach(q=>{w[q]='';const i=$('#wBody [data-k='+q+']');if(i)i.value=''});swLast=0;swPaint();wLive();return}
   if(t.closest('[data-wx],[data-wclose]')){$('#dWiz').close();return}
   if(t.closest('[data-wpdf]')){const s=scales.find(x=>x.id===wsid);savePdf(s,s.cal.find(x=>x.id===wLast));return}
   if(t.closest('[data-wshare]')){const s=scales.find(x=>x.id===wsid),c=s.cal.find(x=>x.id===wLast),p=buildPdf(s,c);if(p){const f=new File([p.d.output('blob')],p.name,{type:'application/pdf'});if(navigator.canShare&&navigator.canShare({files:[f]}))navigator.share({files:[f],title:p.name}).catch(()=>{});else saveFile(p.name,f)}return}
   if(t.closest('[data-wb]')){w.step--;wRender();return}
   if(t.closest('[data-wn]'))wNext();
 });
-$('#dWiz').addEventListener('close',()=>{if(w&&!wDone&&Object.keys(w).length>4)wSave();w=null});
+$('#dWiz').addEventListener('close',()=>{swStop(false);if(w&&!wDone&&Object.keys(w).length>4)wSave();w=null});
 
 function buildPdf(s,c){
   if(!window.jspdf){note('A biblioteca de PDF não carregou. Verifique a internet e tente de novo.');return null}
@@ -449,12 +492,14 @@ function buildPdf(s,c){
   H('Identificação');R('Balança',s.nome);R('Local',s.local||'-');R('Data',fd(c.data));R('Executantes',c.e1+' e '+c.e2);
   if(!full){H('Resultado');R('Erro inicial',fmt(c.ei)+' %');R('Erro final',fmt(c.ef)+' %');R('Tipo de registro','Lançamento manual')}
   if(full){
-  H('Coleta de parâmetros');R('B-04 - Pulsos por metro',r.b04);R('C-02 - Tempo de volta (s)',r.c02);R('C-05 - Comprimento da mesa (m)',r.c05);R('C-08 - Peso padrão (kg)',r.c08);R('D-02 - Fator de correção',r.d02);R('D-06 - Pulsos por volta',r.d06);R('Tamanho da correia (D-06 / B-04)',fmt(x.cor!=null?x.cor:pn(r.cor),4)+' m');if(!dos)R('Totalização da balança',r.tot||'-');
-  H('Cálculo');R('Velocidade (correia / tempo de volta)',fmt(x.vel!=null?x.vel:pn(r.vel),4)+' m/s');R('Fluxo calculado (1 hora)',fmt(x.Q)+' t/h');
+  H('Coleta de parâmetros');R('B-04 - Pulsos por metro',r.b04);R('C-02 - Tempo de volta (s)',r.c02);R('C-05 - Comprimento da mesa (m)',r.c05);R('C-08 - Peso padrão (kg)',r.c08);R('D-02 - Fator de correção',r.d02);R('D-06 - Pulsos por volta',r.d06);R('Tamanho da correia (D-06 / B-04)',fmt(x.cor!=null?x.cor:pn(r.cor),4)+' m');
+  H('Cálculo');R('Velocidade (correia / tempo de volta)',fmt(x.vel!=null?x.vel:pn(r.vel),4)+' m/s');if(!dos)R('Fluxo calculado (1 hora)',fmt(x.Q)+' t/h');
   if(!dos){R('Tempo de 2 voltas',fmt(x.T)+' s');R('Totalização esperada',fmt(x.tons,4)+' t')}
   H('Erro inicial');
   if(dos){lin([0,1]);R('Erro inicial (média)',fmt(c.ei)+' %')}else{R('Tempo calculado / encontrado',fmt(x.T)+' s / '+r.t1+' s');R('Erro inicial',fmt(c.ei)+' %')}
-  H('Calibração');if(!dos&&r.tv)R('Tempo de volta aferido',r.tv+' s');
+  H('Calibração');
+  if(r.tv1){R('Tempo de volta - 3 tomadas',r.tv1+' / '+r.tv2+' / '+r.tv3+' s');R('Tempo de volta aferido (média)',fmt(x.tv!=null?x.tv:pn(r.tv),3)+' s');if(x.dv!=null&&isFinite(x.dv))R('Diferença em relação ao C-02',fmt(x.dv)+' %')}
+  else if(r.tv)R('Tempo de volta aferido',r.tv+' s');
   R('Novo D-06 (Input Belt)',r.d06n);R('Novo B-04',fmt(x.b04n)+' pulsos/m');R('Tara 01',r.k1);R('Tara 02',r.k2);R('Novo D-02 (Check weight)',r.d02n);R('Variação do D-02',fmt(x.dd)+' %');
   H('Erro final');
   if(dos){lin([2,3]);R('Erro final (média)',fmt(c.ef)+' %')}else{R('Tempo calculado / encontrado',fmt(x.T)+' s / '+r.t2+' s');R('Erro final',fmt(c.ef)+' %')}
