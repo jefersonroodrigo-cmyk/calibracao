@@ -1,0 +1,703 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Calibração de balanças</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#1f5c8b">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+:root{--bg:#edf0f3;--card:#fff;--ink:#14202b;--mut:#5b6976;--line:#d3dae1;--acc:#1f5c8b;--g:#23844a;--y:#f2b705;--r:#c92f27;--ci:#2a6fdb;--cf:#7a4fd0;--in:#f6f8fa;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){color-scheme:dark;--bg:#0f161d;--card:#18212a;--ink:#e8edf2;--mut:#93a1ae;--line:#2b3742;--acc:#6db2e8;--ci:#6aa2ff;--cf:#b190ff;--in:#121a21}}
+:root[data-theme="dark"]{color-scheme:dark;--bg:#0f161d;--card:#18212a;--ink:#e8edf2;--mut:#93a1ae;--line:#2b3742;--acc:#6db2e8;--ci:#6aa2ff;--cf:#b190ff;--in:#121a21}
+*{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 16px/1.4 Barlow,system-ui,-apple-system,"Segoe UI",sans-serif}
+main{max-width:1000px;margin:0 auto;padding:16px}
+h1,h2,h3{margin:0;font-family:"Barlow Condensed",Barlow,system-ui,sans-serif;font-weight:700;letter-spacing:.01em}
+h1{font-size:30px;line-height:1.05}h2{font-size:24px}h3{font-size:20px}
+p{margin:0}.mut{color:var(--mut)}.small{font-size:14px}
+.top{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:14px}
+.btn{font:600 15px Barlow,system-ui,sans-serif;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:10px;padding:10px 14px;cursor:pointer}
+.btn.pri{background:var(--acc);border-color:var(--acc);color:#fff}
+:root[data-theme="dark"] .btn.pri,:root:not([data-theme="light"]) .btn.pri{color:#0b1218}
+@media(prefers-color-scheme:light){:root:not([data-theme="dark"]) .btn.pri{color:#fff}}
+.btn:focus-visible,.chip:focus-visible,.card:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+.note{background:var(--card);border:1px solid var(--y);border-radius:10px;padding:10px 12px;margin-bottom:12px;font-size:14px}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:6px}
+.chip{display:flex;align-items:center;gap:7px;font:500 15px Barlow,system-ui,sans-serif;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:99px;padding:7px 13px;cursor:pointer}
+.chip.on{border-color:var(--acc);box-shadow:inset 0 0 0 1px var(--acc)}
+.dot{width:11px;height:11px;border-radius:50%;display:inline-block}
+.dot.g,.tl i.g{background:var(--g)}.dot.y,.tl i.y{background:var(--y)}.dot.r,.tl i.r{background:var(--r)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:12px;margin-top:14px}
+.card{display:flex;gap:14px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;cursor:pointer}
+.card:hover{border-color:var(--acc)}
+.cb{min-width:0;display:flex;flex-direction:column;gap:3px}
+.cb h3{overflow-wrap:anywhere}
+.tl{flex:none;display:flex;flex-direction:column;gap:4px;padding:5px;background:#1b232b;border-radius:10px;align-self:flex-start}
+.tl i{width:16px;height:16px;border-radius:50%;opacity:.16}
+.tl[data-k="r"] i.r{opacity:1;box-shadow:0 0 9px 2px var(--r)}
+.tl[data-k="y"] i.y{opacity:1;box-shadow:0 0 9px 2px var(--y)}
+.tl[data-k="g"] i.g{opacity:1;box-shadow:0 0 9px 2px var(--g)}
+.tl.big i{width:24px;height:24px}
+.st{display:inline-block;align-self:flex-start;padding:2px 10px;border-radius:99px;font-weight:600;font-size:14px;margin:3px 0}
+.st.g{background:var(--g);color:#fff}.st.y{background:var(--y);color:#1b1400}.st.r{background:var(--r);color:#fff}
+.pend{align-self:flex-start;border:1px solid var(--mut);border-radius:6px;padding:0 7px;font-weight:500}
+[hidden]{display:none!important}
+body:not([data-role="admin"]) .adm{display:none!important}
+.sync{display:flex;align-items:center;gap:8px;border:0;background:none;color:var(--mut);font:500 14px Barlow,system-ui,sans-serif;padding:0 0 12px;cursor:pointer;text-align:left}
+.sync i{flex:none;width:9px;height:9px;border-radius:50%;background:var(--g)}
+.sync.pend i{background:var(--y)}.sync.off i{background:var(--r)}
+.fl{display:flex;flex-direction:column;gap:3px;font-size:14px;color:var(--mut)}
+.me{margin-top:22px;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px;display:flex;flex-wrap:wrap;gap:14px;justify-content:space-between;align-items:center}
+.me h2{margin-bottom:2px}
+.mact{display:flex;gap:10px;flex-wrap:wrap}
+a.btn{text-decoration:none;display:inline-block;text-align:center}
+.res{background:var(--in);border:1px solid var(--line);border-radius:10px;padding:10px 12px;display:flex;flex-direction:column;gap:3px;font-size:15px}
+.res b{font-size:18px}.res b.bn{font-size:26px;color:var(--acc)}
+.stp{font-size:14px;color:var(--mut)}
+.wb{display:flex;gap:10px}.wb .btn{flex:1}
+.chk{display:flex;flex-direction:row;gap:10px;align-items:center;font-size:16px;color:var(--ink);padding:6px 0}
+.chk input{width:22px;height:22px;flex:none}
+.hint{border-left:4px solid var(--y);padding:6px 10px;background:var(--in);border-radius:6px}
+table.sm{width:100%;border-collapse:collapse;font-size:14px}table.sm td{padding:5px 0;border-top:1px solid var(--line)}table.sm td:last-child{text-align:right;font-weight:600}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px;margin-top:8px}
+.tile{display:flex;flex-direction:column;gap:6px;text-align:left;font:inherit;color:inherit;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px;cursor:pointer;min-height:160px}
+.tile:hover{border-color:var(--acc)}
+.tile:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+.tile h2{font-size:30px}
+.tile .cnt{display:flex;gap:6px 16px;flex-wrap:wrap;font-size:15px;margin-top:auto;padding-top:14px}
+.tile .cnt span{display:flex;align-items:center;gap:6px}
+#bBack{font-size:16px;margin-bottom:4px}
+.tp{display:block;margin:4px 0}
+select{font:inherit;color:var(--ink);background:var(--in);border:1px solid var(--line);border-radius:8px;padding:4px 6px}
+.empty{grid-column:1/-1;text-align:center;padding:36px 12px;color:var(--mut)}
+dialog{width:min(640px,100%);max-height:92dvh;border:0;border-radius:16px;padding:0;background:var(--bg);color:var(--ink);overflow:auto}
+dialog::backdrop{background:rgba(8,14,20,.6)}
+@media(max-width:600px){dialog{margin:auto 0 0;border-radius:16px 16px 0 0;max-height:94dvh}}
+.sheet{padding:16px 16px calc(20px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:14px}
+.sh{display:flex;gap:14px;align-items:flex-start}
+.sh>div{flex:1;min-width:0}
+.x{margin-left:auto;font-size:26px;line-height:1;border:0;background:none;color:var(--mut);cursor:pointer;padding:4px 8px}
+.box{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px}
+.box h3{margin-bottom:8px}
+.leg{display:flex;gap:16px;font-size:14px;margin-bottom:4px}
+.leg span::before{content:"";display:inline-block;width:12px;height:12px;margin-right:6px;vertical-align:-1px}
+.leg .a::before{background:var(--ci);border-radius:50%}.leg .b::before{background:var(--cf);border-radius:2px}
+svg{display:block;width:100%;height:auto}
+.f{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.f label{display:flex;flex-direction:column;gap:3px;font-size:14px;color:var(--mut)}
+.f .w{grid-column:1/-1}
+input,textarea{font:400 16px Barlow,system-ui,sans-serif;color:var(--ink);background:var(--in);border:1px solid var(--line);border-radius:9px;padding:9px 10px;width:100%}
+textarea{min-height:64px;resize:vertical}
+ul.h{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
+ul.h li{padding:10px 0;border-top:1px solid var(--line);display:flex;flex-direction:column;gap:2px}
+ul.h li:first-child{border-top:0}
+.hr{display:flex;justify-content:space-between;gap:10px}
+.lnk{align-self:flex-start;border:0;background:none;color:var(--mut);font:500 14px Barlow,system-ui,sans-serif;padding:4px 0;cursor:pointer;text-decoration:underline}
+</style>
+</head>
+<body>
+<main>
+  <header class="top">
+    <div><button class="lnk" id="bBack" hidden>← Início</button><h1 id="ttl">Calibração de balanças</h1><p class="mut" id="sub">Escolha o tipo de balança</p></div>
+    <button class="btn pri adm" id="bNew" hidden>Nova balança</button>
+  </header>
+  <button id="sync" class="sync" type="button" hidden></button>
+  <div id="note" class="note" hidden></div>
+  <section id="home" class="tiles"></section>
+  <section id="me" class="me">
+    <div><h2>Jeferson Rodrigo dos Santos</h2><p>Inspetor de automação e instrumentação</p><p class="mut">Pátios de Minérios - RED 2</p></div>
+    <div class="mact"><a class="btn pri" href="https://wa.me/5531982613138" target="_blank" rel="noopener noreferrer">Falar comigo no WhatsApp</a><button class="btn" id="accBtn" type="button">Acesso</button><button class="btn adm" id="expBtn" type="button">Exportar tudo (CSV)</button><button class="btn adm" id="bkBtn" type="button">Backup</button><button class="btn adm" id="rsBtn" type="button">Importar backup</button><input type="file" id="rsFile" accept=".json,application/json" hidden></div>
+  </section>
+  <div id="catv" hidden>
+  <nav class="chips" id="chips"></nav>
+  <p class="mut small">Em dia: até 19 dias · Atenção: 20 a 29 dias · Vencida: 30 dias ou mais</p>
+  <section id="list" class="grid"></section>
+  </div>
+</main>
+
+<dialog id="dCfg">
+  <form id="fCfg" class="sheet">
+    <h2>Conectar ao servidor</h2>
+    <p class="mut small">Abra o link de acesso que o inspetor enviou, ou preencha abaixo.</p>
+    <label class="fl">Endereço do servidor (URL)<input name="url" inputmode="url" autocomplete="off" required></label>
+    <label class="fl">Código de acesso<input name="code" type="password" autocomplete="off" required></label>
+    <p class="small" id="cfgMsg"></p>
+    <button class="btn pri" type="submit">Conectar</button>
+  </form>
+</dialog>
+
+<dialog id="dAcc"><div class="sheet" id="accBody"></div></dialog>
+
+<dialog id="dPw">
+  <form id="fPw" class="sheet">
+    <h2>Digite a senha</h2>
+    <p class="mut small">A senha é necessária para cadastrar, registrar e excluir.</p>
+    <input type="password" name="pw" inputmode="numeric" autocomplete="off" required aria-label="Senha">
+    <p class="small" id="pwErr" style="color:var(--r)"></p>
+    <div class="wb"><button type="button" class="btn" data-close>Cancelar</button><button type="submit" class="btn pri">Entrar</button></div>
+  </form>
+</dialog>
+
+<dialog id="dWiz"><div class="sheet" id="wBody"></div></dialog>
+
+<dialog id="dNew">
+  <form id="fNew" class="sheet f" style="display:grid">
+    <div class="w sh"><h2 id="hNew">Nova balança</h2><button type="button" class="x" data-close aria-label="Fechar">×</button></div>
+    <label class="w">Identificação (nome ou TAG)<input name="nome" required maxlength="80" autocomplete="off"></label>
+    <label class="w">Local<input name="local" maxlength="80" autocomplete="off"></label>
+    
+    <button class="btn pri w" type="submit">Salvar balança</button>
+  </form>
+</dialog>
+
+<dialog id="dSc">
+  <div class="sheet">
+    <div class="sh" id="dHead"></div>
+    <div class="box"><h3>Histórico de erro</h3>
+      <div class="leg"><span class="a">Erro inicial</span><span class="b">Erro final</span></div>
+      <div id="dChart"></div>
+    </div>
+    <div class="box" id="bWiz" hidden><h3>Calibração guiada</h3><p class="mut small">Passo a passo com cálculo automático e relatório em PDF.</p><div class="wb" style="margin-top:10px"><button class="btn pri" id="bWizGo"></button><button class="btn" id="bWizDel" hidden>Descartar</button></div></div>
+    <div class="box"><h3>Pendências</h3>
+      <form id="fPend" class="f">
+        <label class="w">Pendências mecânicas<textarea id="pm" maxlength="800"></textarea></label>
+        <label class="w">Pendências operacionais<textarea id="po" maxlength="800"></textarea></label>
+        <button class="btn pri w" type="submit">Salvar pendências</button>
+      </form>
+    </div>
+    <div class="box"><h3>Registrar calibração</h3>
+      <form id="fCal" class="f">
+        <label class="w">Data da calibração<input type="date" name="data" required></label>
+        <label>Erro inicial (%)<input name="ei" inputmode="decimal" required placeholder="0,00"></label>
+        <label>Erro final (%)<input name="ef" inputmode="decimal" required placeholder="0,00"></label>
+        <label>Executante 1<input name="e1" required maxlength="60" list="nomes" autocomplete="off"></label>
+        <label>Executante 2<input name="e2" required maxlength="60" list="nomes" autocomplete="off"></label>
+        <label class="w">Observações<textarea name="obs" maxlength="500"></textarea></label>
+        <button class="btn pri w" type="submit">Registrar calibração</button>
+      </form>
+      <datalist id="nomes"></datalist>
+    </div>
+    <div class="box"><h3>Calibrações anteriores</h3><ul class="h" id="dHist"></ul></div>
+    <button class="btn" data-close>Fechar</button>
+  </div>
+</dialog>
+
+<script>
+const $=s=>document.querySelector(s);
+const esc=t=>String(t==null?'':t).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const iso=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+const pd=s=>{const[a,b,c]=s.split('-').map(Number);return new Date(a,b-1,c)};
+const fd=s=>s.split('-').reverse().join('/');
+const daysSince=s=>{const n=new Date();return Math.round((new Date(n.getFullYear(),n.getMonth(),n.getDate())-pd(s))/864e5)};
+const num=v=>Number(v).toLocaleString('pt-BR',{maximumFractionDigits:4});
+const pl=n=>n+' dia'+(n===1?'':'s');
+const clone=o=>JSON.parse(JSON.stringify(o));
+let scales=[],filter='all',openId=null;
+function saveFile(name,blob){const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},1500)}
+
+const sorted=(s,dir)=>(s.cal||[]).slice().sort((a,b)=>(a.data<b.data?-1:a.data>b.data?1:String(a.id)<String(b.id)?-1:String(a.id)>String(b.id)?1:0)*dir);
+function stat(s){
+  const l=sorted(s,-1)[0];
+  if(!l)return{k:'r',d:Infinity,l,t:'Vencida · sem calibração registrada'};
+  const d=daysSince(l.data);
+  if(d>=30)return{k:'r',d,l,t:'Vencida · '+pl(d)+' sem calibrar'};
+  if(d>=20)return{k:'y',d,l,t:'Atenção · vence em '+pl(30-d)};
+  return{k:'g',d,l,t:'Em dia · vence em '+pl(30-d)};
+}
+const lamp=(k,big)=>`<span class="tl${big?' big':''}" data-k="${k}" role="img" aria-label="Farol ${{g:'verde',y:'amarelo',r:'vermelho'}[k]}"><i class="r"></i><i class="y"></i><i class="g"></i></span>`;
+const tags=s=>(s.pm?'<p class="small pend">Pendência mecânica</p>':'')+(s.po?'<p class="small pend">Pendência operacional</p>':'');
+function note(m){const n=$('#note');n.textContent=m;n.hidden=!m}
+
+function arm(b,fn,label){
+  if(!unlocked){askPw(()=>arm(b,fn,label));return}
+  if(!b.dataset.arm){b.dataset.arm=1;const t=b.textContent;b.textContent=label;setTimeout(()=>{delete b.dataset.arm;b.textContent=t},3000);return}
+  fn();
+}
+
+function renderList(){
+  const rows=inCat().map(s=>({s,t:stat(s)}));
+  const c={g:0,y:0,r:0};rows.forEach(r=>c[r.t.k]++);
+  $('#chips').innerHTML=[['all','Todas',rows.length],['g','Em dia',c.g],['y','Atenção',c.y],['r','Vencidas',c.r]]
+    .map(([k,n,q])=>`<button class="chip${filter===k?' on':''}" data-f="${k}">${k!=='all'?`<i class="dot ${k}"></i>`:''}${n} <b>${q}</b></button>`).join('');
+  const vis=rows.filter(r=>filter==='all'||r.t.k===filter).sort((a,b)=>(a.t.d===b.t.d?0:b.t.d>a.t.d?1:-1)||a.s.nome.localeCompare(b.s.nome));
+  $('#list').innerHTML=vis.length?vis.map(({s,t})=>{
+    const l=t.l;
+    return `<article class="card" data-id="${s.id}" tabindex="0" role="button">${lamp(t.k)}<div class="cb"><h3>${esc(s.nome)}</h3>${s.local?`<p class="mut small">${esc(s.local)}</p>`:''}<span class="st ${t.k}">${t.t}</span>${tags(s)}${l?`<p class="small">Calibrada em ${fd(l.data)} · há ${pl(t.d)}</p><p class="small">Erro inicial <b>${num(l.ei)} %</b> → final <b>${num(l.ef)} %</b></p>`:''}</div></article>`;
+  }).join(''):`<p class="empty">${rows.length?'Nenhuma balança nesta situação.':(role==='admin'?'Nenhuma balança cadastrada. Toque em “Nova balança” para começar.':'Nenhuma balança cadastrada pelo administrador ainda.')}</p>`;
+}
+
+function chart(s){
+  const c=sorted(s,1);
+  if(!c.length)return '<p class="mut small">Registre a primeira calibração para ver o histórico.</p>';
+  const W=360,H=210,L=52,R=14,T=14,B=30;
+  const v=c.flatMap(x=>[x.ei,x.ef]);let lo=Math.min(0,...v),hi=Math.max(0,...v);
+  if(hi===lo)hi=lo+1;const p=(hi-lo)*.12;lo-=p;hi+=p;
+  const X=i=>c.length===1?(L+W-R)/2:L+i*(W-L-R)/(c.length-1);
+  const Y=y=>T+(hi-y)*(H-T-B)/(hi-lo);
+  let g='';
+  for(let k=0;k<=4;k++){const y=lo+(hi-lo)*k/4;g+=`<line x1="${L}" x2="${W-R}" y1="${Y(y)}" y2="${Y(y)}" stroke="var(--line)"/><text x="${L-6}" y="${Y(y)+4}" text-anchor="end" font-size="11" fill="var(--mut)">${num(+y.toFixed(3))}%</text>`}
+  g+=`<line x1="${L}" x2="${W-R}" y1="${Y(0)}" y2="${Y(0)}" stroke="var(--mut)" stroke-dasharray="4 3"/>`;
+  const step=Math.ceil(c.length/6);
+  c.forEach((x,i)=>{if(i%step===0||i===c.length-1)g+=`<text x="${X(i)}" y="${H-10}" text-anchor="middle" font-size="11" fill="var(--mut)">${fd(x.data).slice(0,5)}</text>`});
+  const line=(key,col,sq)=>`<polyline fill="none" stroke="var(${col})" stroke-width="2.5" points="${c.map((x,i)=>X(i)+','+Y(x[key])).join(' ')}"/>`+
+    c.map((x,i)=>{const t=`<title>${fd(x.data)}: ${num(x[key])} %</title>`;
+      return sq?`<rect x="${X(i)-4.5}" y="${Y(x[key])-4.5}" width="9" height="9" rx="1.5" fill="var(${col})">${t}</rect>`:`<circle cx="${X(i)}" cy="${Y(x[key])}" r="5" fill="var(${col})">${t}</circle>`}).join('');
+  return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Gráfico de erro inicial e final por calibração">${g}${line('ei','--ci',false)}${line('ef','--cf',true)}</svg><p class="mut small">Erro em % · linha tracejada = erro zero</p>`;
+}
+
+function renderDetail(){
+  const s=scales.find(x=>x.id===openId);
+  if(!s){if($('#dSc').open)$('#dSc').close();return}
+  const t=stat(s),l=t.l;
+  $('#dHead').innerHTML=`${lamp(t.k,true)}<div><h2>${esc(s.nome)}</h2>${s.local?`<p class="mut">${esc(s.local)}</p>`:''}<span class="st ${t.k}">${t.t}</span>${l?`<p class="small">Última calibração em ${fd(l.data)} (há ${pl(t.d)})</p>`:''}<label class="small mut tp adm">Tipo: <select id="selTipo">${!s.tipo?'<option value="">Escolher…</option>':''}<option value="dos"${s.tipo==='dos'?' selected':''}>Dosadora</option><option value="flu"${s.tipo==='flu'?' selected':''}>De fluxo</option></select></label><button class="lnk adm" id="bDel">Excluir balança</button></div><button class="x" data-close aria-label="Fechar">×</button>`;
+  ['pm','po'].forEach(k=>{const ta=$('#'+k);if(!ta.dataset.dirty)ta.value=s[k]||''});
+  $('#bWiz').hidden=!['flu','dos'].includes(s.tipo);const dr=getDraft(s.id);$('#bWizGo').textContent=dr?'Continuar calibração em andamento':'Iniciar calibração guiada';$('#bWizDel').hidden=!dr;
+  $('#dChart').innerHTML=chart(s);
+  $('#dHist').innerHTML=sorted(s,-1).map(c=>`<li><div class="hr"><b>${fd(c.data)}</b><span>${num(c.ei)} % → ${num(c.ef)} %</span></div><p class="small mut">Executantes: ${esc(c.e1)} e ${esc(c.e2)}</p>${c.obs?`<p class="small">${esc(c.obs)}</p>`:''}<button class="lnk" data-pdf="${c.id}">Baixar relatório (PDF)</button><button class="lnk adm" data-c="${c.id}">Excluir registro</button></li>`).join('')||'<li class="mut small">Nenhum registro ainda.</li>';
+  const names=new Set();scales.forEach(x=>(x.cal||[]).forEach(c=>{names.add(c.e1);names.add(c.e2)}));
+  $('#nomes').innerHTML=[...names].map(n=>`<option value="${esc(n)}">`).join('');
+}
+const CATS={dos:'Balanças dosadoras',flu:'Balanças de fluxo',sem:'Sem categoria'};
+let cat=null;
+const inCat=()=>scales.filter(s=>(s.tipo||'sem')===cat);
+function renderHome(){
+  const ks=['dos','flu'];if(scales.some(s=>!s.tipo))ks.push('sem');
+  $('#home').innerHTML=ks.map(k=>{
+    const l=scales.filter(s=>(s.tipo||'sem')===k),c={g:0,y:0,r:0};l.forEach(s=>c[stat(s).k]++);
+    return `<button class="tile" data-cat="${k}"><h2>${CATS[k]}</h2><p class="mut">${l.length?pl(l.length).replace('dia','balança'):'Nenhuma cadastrada'}</p><div class="cnt"><span><i class="dot g"></i>${c.g} em dia</span><span><i class="dot y"></i>${c.y} atenção</span><span><i class="dot r"></i>${c.r} vencida${c.r===1?'':'s'}</span></div></button>`}).join('');
+}
+function showView(){
+  const h=!cat;
+  $('#home').hidden=!h;$('#me').hidden=!h;$('#catv').hidden=h;$('#bBack').hidden=h;$('#bNew').hidden=h||cat==='sem';
+  $('#ttl').textContent=h?'Calibração de balanças':CATS[cat];
+  $('#sub').textContent=h?'Escolha o tipo de balança':'Prazo por farol e histórico de erros';
+}
+function render(){
+  if(cat==='sem'&&!scales.some(s=>!s.tipo))cat=null;
+  renderHome();if(cat)renderList();showView();if($('#dSc').open)renderDetail();
+}
+
+$('#chips').onclick=e=>{const b=e.target.closest('[data-f]');if(b){filter=b.dataset.f;renderList()}};
+const openScale=id=>{
+  openId=id;const f=$('#fCal');f.reset();f.data.value=iso(new Date());['pm','po'].forEach(k=>delete $('#'+k).dataset.dirty);
+  $('#dSc').showModal();renderDetail();$('#dSc').scrollTop=0;
+};
+$('#list').onclick=e=>{const c=e.target.closest('.card');if(c)openScale(c.dataset.id)};
+$('#list').onkeydown=e=>{if(e.key==='Enter'){const c=e.target.closest('.card');if(c)openScale(c.dataset.id)}};
+document.querySelectorAll('dialog').forEach(d=>{
+  d.addEventListener('click',e=>{if(e.target===d||e.target.closest('[data-close]'))d.close()});
+});
+$('#home').onclick=e=>{const b=e.target.closest('[data-cat]');if(b){cat=b.dataset.cat;filter='all';render();window.scrollTo(0,0)}};
+$('#bBack').onclick=()=>{cat=null;render();window.scrollTo(0,0)};
+$('#bNew').onclick=()=>auth(()=>{$('#fNew').reset();$('#hNew').textContent=cat==='dos'?'Nova balança dosadora':'Nova balança de fluxo';$('#dNew').showModal()});
+$('#fNew').onsubmit=e=>{
+  e.preventDefault();const f=e.target;
+  const s={id:'b'+Date.now().toString(36),nome:f.nome.value.trim(),local:f.local.value.trim(),tipo:cat,pm:'',po:'',cal:[]};
+  $('#dNew').close();op('saveScale',{scale:{id:s.id,tipo:s.tipo,nome:s.nome,local:s.local}});openScale(s.id);
+};
+$('#fPend').oninput=e=>{e.target.dataset.dirty=1};
+$('#fPend').onsubmit=e=>{
+  e.preventDefault();
+  const s=clone(scales.find(x=>x.id===openId));
+  s.pm=$('#pm').value.trim();s.po=$('#po').value.trim();
+  delete $('#pm').dataset.dirty;delete $('#po').dataset.dirty;
+  const b=e.submitter;if(b){const t=b.textContent;b.textContent='Salvo';setTimeout(()=>{b.textContent=t},1500)}
+  op('setPend',{balancaId:s.id,pm:s.pm,po:s.po});
+};
+$('#fCal').onsubmit=e=>{
+  e.preventDefault();const f=e.target;
+  const ei=parseFloat(f.ei.value.replace(',','.')),ef=parseFloat(f.ef.value.replace(',','.'));
+  if(isNaN(ei)||isNaN(ef)){note('Informe erro inicial e final como números.');return}
+  note('');
+  const s=clone(scales.find(x=>x.id===openId));s.cal=s.cal||[];
+  const nid='c'+Date.now().toString(36);
+  s.cal.push({id:nid,data:f.data.value,ei,ef,e1:f.e1.value.trim(),e2:f.e2.value.trim(),obs:f.obs.value.trim()});
+  const e1=f.e1.value,e2=f.e2.value;f.reset();f.data.value=iso(new Date());f.e1.value=e1;f.e2.value=e2;
+  addCal(s,s.cal[s.cal.length-1]).then(r=>note(msgEnvio(r)));
+};
+$('#dSc').addEventListener('click',e=>{
+  const pb=e.target.closest('[data-pdf]');if(pb){const s=scales.find(x=>x.id===openId),c=s&&s.cal.find(x=>x.id===pb.dataset.pdf);if(c)savePdf(s,c);return}
+  if(e.target.closest('#bWizGo')){auth(wizOpen);return}
+  const wd=e.target.closest('#bWizDel');if(wd){arm(wd,()=>{dropDraft(openId);renderDetail()},'Toque para confirmar');return}
+  const b=e.target.closest('#bDel,[data-c]');if(!b)return;
+  if(b.id==='bDel')arm(b,()=>{const id=openId;$('#dSc').close();op('delScale',{id})},'Toque para confirmar');
+  else arm(b,()=>op('delCal',{id:b.dataset.c}),'Toque para confirmar');
+});
+$('#dSc').addEventListener('change',e=>{
+  if(e.target.id==='selTipo'&&e.target.value){const s=scales.find(x=>x.id===openId);op('saveScale',{scale:{id:s.id,tipo:e.target.value,nome:s.nome,local:s.local}})}
+});
+$('#dSc').addEventListener('close',()=>{openId=null});
+
+render();
+/* ===== Calibração guiada · balança de fluxo e dosadora ===== */
+const pn=v=>parseFloat(String(v==null?'':v).replace(',','.'));
+const fmt=(v,d=3)=>isFinite(v)?Number(v).toLocaleString('pt-BR',{maximumFractionDigits:d}):'-';
+const FL={e1:['Executante 1'],e2:['Executante 2'],b04:['B-04 · Pulsos por metro','pulsos/m'],c02:['C-02 · Tempo de volta','s'],c05:['C-05 · Comprimento da mesa','m'],c08:['C-08 · Peso padrão','kg'],d02:['D-02 · Fator de correção'],d06:['D-06 · Pulsos por volta','pulsos'],tot:['Totalização da balança'],t1:['Tempo encontrado','s'],tv:['Tempo de volta aferido','s'],d06n:['Novo D-06 (Input Belt)','pulsos'],k1:['Tara 01'],k2:['Tara 02'],d02n:['Novo D-02 · Fator de correção'],t2:['Tempo encontrado','s'],p1:['Linha 1 · Pedido','t/h'],s1:['Linha 1 · Tempo de volta','s'],p2:['Linha 2 · Pedido','t/h'],s2:['Linha 2 · Tempo de volta','s'],p3:['Linha 1 · Pedido','t/h'],s3:['Linha 1 · Tempo de volta','s'],p4:['Linha 2 · Pedido','t/h'],s4:['Linha 2 · Tempo de volta','s']};
+const TXT=['e1','e2','k1','k2','tot','data'];
+const CK=['Balança voltada para gravimétrico','Balança desabilitada','Pesos guardados','Totalização restaurada','Balança liberada para operação'];
+const WS={
+  flu:[{id:'dados',t:'Dados iniciais',f:['e1','e2','b04','c02','c05','c08','d02','d06','tot']},{id:'ei',t:'Erro inicial',f:['t1']},{id:'vol',t:'Volumétrico',f:['tv']},{id:'belt',t:'Input Belt',f:['d06n']},{id:'tara',t:'Tara',f:['k1','k2']},{id:'chk',t:'Check weight',f:['d02n']},{id:'ef',t:'Erro final',f:['t2']},{id:'fim',t:'Encerramento',f:[]}],
+  dos:[{id:'dados',t:'Dados iniciais',f:['e1','e2','b04','c02','c05','c08','d02','d06']},{id:'ei',t:'Erro inicial',f:['p1','s1','p2','s2']},{id:'belt',t:'Input Belt',f:['d06n']},{id:'tara',t:'Tara',f:['k1','k2']},{id:'chk',t:'Check weight',f:['d02n']},{id:'ef',t:'Erro final',f:['p3','s3','p4','s4']},{id:'fim',t:'Encerramento',f:[]}]};
+const WI={
+  dados:'Informe os parâmetros atuais do módulo (coleta de parâmetros).',
+  ei:{flu:'Zere o totalizador da balança e cronometre o tempo até o totalizador indicar o valor em destaque abaixo. Informe o tempo encontrado.',dos:'SEM OS PESOS. Passe a balança para volumétrico, habilite o teclado e faça o pedido de meio de faixa. Aferir o tempo de volta e informe o pedido e o tempo de volta de cada linha.'},
+  vol:'Passe a balança para volumétrico e habilite o teclado. Aferir o tempo de volta e informe abaixo.',
+  belt:{flu:'Faça o Input Belt no módulo e informe o novo valor de D-06 (pulsos por volta). Digite no módulo o novo B-04 calculado abaixo.',dos:'SEM OS PESOS. Faça o Input Belt no módulo e informe o novo valor de D-06 (pulsos por volta). Digite no módulo o novo B-04 calculado abaixo.'},
+  tara:{flu:'Realize o procedimento de tara duas vezes, sem os pesos padrão, e informe os resultados.',dos:'SEM OS PESOS. Realize o procedimento de tara duas vezes, sem os pesos padrão, e informe os resultados.'},
+  chk:{flu:'Com o peso padrão na balança, faça o check weight e informe o novo fator de correção (D-02).',dos:'COM OS PESOS. Com o peso padrão na balança, faça o check weight e informe o novo fator de correção (D-02).'},
+  ef:{flu:'Volte a balança para gravimétrico. Zere o totalizador e cronometre o tempo até o totalizador indicar o valor em destaque abaixo. Informe o tempo encontrado.',dos:'Volte a balança para gravimétrico e informe o pedido e o tempo de volta de cada linha.'}
+};
+const okf=k=>TXT.includes(k)?String(w[k]||'').trim()!=='':pn(w[k])>0;
+let w=null,wsid=null,wDone=false,wLast=null;
+function calc(w){
+  const cor=pn(w.d06)/pn(w.b04),vel=cor/pn(w.c02),Q=vel*3.6*pn(w.c08)/pn(w.c05),T=2*pn(w.c02),tons=Q*T/3600;
+  const fe=t=>cor/pn(t)*3.6*pn(w.c08)/pn(w.c05),er=(p,s)=>(fe(s)/pn(p)-1)*100;
+  const o={cor,vel,Q,T,tons,b04n:pn(w.d06n)/cor,dd:(pn(w.d02n)-pn(w.d02))/pn(w.d02)*100,dv:(pn(w.tv)-pn(w.c02))/pn(w.c02)*100};
+  if(w.tp==='dos'){
+    o.f=[1,2,3,4].map(i=>fe(w['s'+i]));o.e=[1,2,3,4].map(i=>er(w['p'+i],w['s'+i]));
+    o.ei=(o.e[0]+o.e[1])/2;o.ef=(o.e[2]+o.e[3])/2;
+  }else{o.ei=(pn(w.t1)/T-1)*100;o.ef=(pn(w.t2)/T-1)*100}
+  return o;
+}
+const inp=k=>`<label>${FL[k][0]}${FL[k][1]?' ('+FL[k][1]+')':''}<input data-k='${k}' ${k[0]==='e'?'':'inputmode=decimal'} value='${esc(w[k])}' autocomplete='off'></label>`;
+function wizOpen(){
+  const s=scales.find(x=>x.id===openId);wsid=s.id;wDone=false;
+  const dr=getDraft(s.id);w=dr&&dr.v===2?dr:{v:2,step:0,tp:s.tipo,data:iso(new Date())};
+  wRender();$('#dWiz').showModal();$('#dWiz').scrollTop=0;
+}
+function wSave(){const s=scales.find(x=>x.id===wsid);if(!s||wDone||!w)return;setDraft(wsid,w);if($('#dSc').open&&openId===wsid)renderDetail()}
+function wLive(){
+  const el=$('#wLive');if(!el)return;
+  const c=calc(w),id=WS[w.tp][w.step].id,dos=w.tp==='dos',R=h=>`<div class='res'>${h}</div>`;
+  const ex=R(`<span>Velocidade (correia ÷ tempo de volta): <b>${fmt(c.vel,4)} m/s</b></span><span>Fluxo calculado (1 h): <b>${fmt(c.Q)} t/h</b></span><span>Tempo de 2 voltas: <b>${fmt(c.T)} s</b></span><span>Totalizar em 2 voltas: <b class='bn'>${fmt(c.tons,4)} t</b></span>`);
+  const rows=a=>R(`<span>Fluxo calculado de referência: <b>${fmt(c.Q)} t/h</b></span>`)+R(a.map(i=>`<span>Linha ${i%2+1}: fluxo encontrado <b>${fmt(c.f[i])} t/h</b> · erro <b>${fmt(c.e[i])} %</b></span>`).join(''));
+  let h='';
+  if(id==='dados')h=R(`<span>Comprimento da correia = D-06 ÷ B-04: <b>${fmt(c.cor,4)} m</b></span><span>Velocidade = correia ÷ tempo de volta: <b>${fmt(c.vel,4)} m/s</b></span>`);
+  else if(id==='ei')h=dos?rows([0,1])+R(`<span>Erro inicial (média): <b>${fmt(c.ei)} %</b></span>`):ex+R(`<span>Erro inicial: <b>${fmt(c.ei)} %</b></span>`);
+  else if(id==='vol')h=R(`<span>Diferença em relação ao C-02: <b>${fmt(c.dv)} %</b></span>`);
+  else if(id==='belt')h=R(`<span>Novo B-04 = novo D-06 ÷ comprimento da correia: <b class='bn'>${fmt(c.b04n)} pulsos/m</b></span>`);
+  else if(id==='chk')h=R(`<span>Variação do D-02: <b>${fmt(c.dd)} %</b></span>`);
+  else if(id==='ef')h=dos?rows([2,3])+R(`<span>Erro final (média): <b>${fmt(c.ef)} %</b></span>`):ex+R(`<span>Erro final: <b>${fmt(c.ef)} %</b></span>`);
+  el.innerHTML=h;
+}
+function wSum(){
+  const c=calc(w),dos=w.tp==='dos',m=dos?' (média)':'';
+  const rw=[['Erro inicial',fmt(c.ei)+' %'+m],['Erro final',fmt(c.ef)+' %'+m],['Comprimento da correia',fmt(c.cor,4)+' m'],['Novo B-04',fmt(c.b04n)+' pulsos/m'],['Novo D-06',w.d06n+' pulsos'],['Novo D-02',w.d02n+' ('+fmt(c.dd)+' %)'],['Taras',w.k1+' / '+w.k2],['Executantes',w.e1+' e '+w.e2]];
+  if(!dos)rw.splice(2,0,['Totalizar em 2 voltas',fmt(c.tons,4)+' t em '+fmt(c.T)+' s'],['Tempo encontrado inicial / final',fmt(pn(w.t1))+' s / '+fmt(pn(w.t2))+' s']);
+  const ck=CK.map((t,i)=>`<label class='chk'><input type='checkbox' data-ck='${i}'${w.ck&&w.ck[i]?' checked':''}>${t}${i===3&&!dos&&w.tot?' (valor: '+esc(w.tot)+')':''}</label>`).join('');
+  return `<table class='sm'>${rw.map(r=>`<tr><td>${r[0]}</td><td>${esc(r[1])}</td></tr>`).join('')}</table><div><p class='small mut'>Confirme o encerramento:</p>${ck}</div><label class='small mut' style='display:flex;flex-direction:column;gap:3px'>Observações<textarea data-k='obs' maxlength='500'>${esc(w.obs)}</textarea></label>`;
+}
+function wRender(){
+  const L=WS[w.tp],i=w.step,st=L[i],id=st.id,s=scales.find(x=>x.id===wsid);
+  let h=`<div class='sh'><div><h2>${esc(s.nome)}</h2><p class='stp'>Balança ${w.tp==='dos'?'dosadora':'de fluxo'} · ${st.t} · etapa ${i+1} de ${L.length}</p></div><button type='button' class='x' data-wx aria-label='Fechar'>×</button></div>`;
+  if(id!=='fim'){
+    const t=WI[id];
+    h+=`<p>${typeof t==='string'?t:t[w.tp]}</p>${id==='chk'?`<p class='hint'>Peso padrão: ${esc(w.c08)} kg. Lembre-se de colocar o peso na balança antes do check weight.</p>`:''}<div id='wLive' style='display:flex;flex-direction:column;gap:8px'></div><div class='f'>${id==='dados'?`<label class='w'>Data da calibração<input type='date' data-k='data' value='${esc(w.data)}'></label>`:''}${st.f.map(inp).join('')}</div>`;
+  }else h+=wSum();
+  h+=`<p class='small' id='wErr' style='color:var(--r)'></p><div class='wb'>${i>0?`<button class='btn' data-wb>Voltar</button>`:''}<button class='btn pri' data-wn>${id==='fim'?'Finalizar e salvar':'Próximo'}</button></div>`;
+  $('#wBody').innerHTML=h;wLive();
+}
+function wNext(){
+  const L=WS[w.tp],i=w.step,id=L[i].id,bad=L[i].f.concat(id==='dados'?['data']:[]).find(k=>!okf(k));
+  if(bad){$('#wErr').textContent='Preencha corretamente: '+(FL[bad]?FL[bad][0]:'data')+'.';return}
+  if(id==='fim'){
+    if(!(w.ck&&w.ck.filter(Boolean).length===CK.length)){$('#wErr').textContent='Marque todos os itens do encerramento.';return}
+    wFinish();return;
+  }
+  w.step++;wSave();wRender();$('#dWiz').scrollTop=0;
+}
+function wFinish(){
+  const s=clone(scales.find(x=>x.id===wsid)),c=calc(w),id='c'+Date.now().toString(36),rel=clone(w);
+  delete rel.step;delete rel.v;
+  rel.res=clone({cor:c.cor,vel:c.vel,Q:c.Q,T:c.T,tons:c.tons,b04n:c.b04n,dd:c.dd,dv:c.dv,e:c.e,f:c.f});
+  s.cal=s.cal||[];
+  s.cal.push({id,data:w.data,ei:+c.ei.toFixed(4),ef:+c.ef.toFixed(4),e1:w.e1.trim(),e2:w.e2.trim(),obs:(w.obs||'').trim(),rel});
+  dropDraft(s.id);wDone=true;wLast=id;const pr=addCal(s,s.cal[s.cal.length-1]);
+  $('#wBody').innerHTML=`<div class='sh'><h2>Calibração salva</h2><button type='button' class='x' data-wclose aria-label='Fechar'>×</button></div><div class='res'><span>Erro inicial: <b>${fmt(c.ei)} %</b></span><span>Erro final: <b>${fmt(c.ef)} %</b></span></div><div class='wb'><p class='small mut' id='wEnv'>Enviando ao servidor…</p><div class='wb'><button class='btn pri' data-wpdf>Baixar PDF</button><button class='btn' data-wshare>Compartilhar</button></div><div class='wb'><a class='btn' href='https://wa.me/5531982613138?text=${encodeURIComponent(txtCurto(s,s.cal[s.cal.length-1])).replace(/'/g,'%27')}' target='_blank' rel='noopener'>WhatsApp (resumo)</a><button class='btn' data-wclose>Fechar</button></div>`;
+  pr.then(r=>{const e=$('#wEnv');if(e)e.textContent=msgEnvio(r)});
+}
+$('#wBody').addEventListener('input',e=>{
+  const t=e.target;
+  if(t.dataset.ck!=null){w.ck=w.ck||[];w.ck[+t.dataset.ck]=t.checked;return}
+  const k=t.dataset.k;if(k){w[k]=t.value;wLive()}
+});
+$('#wBody').addEventListener('click',e=>{
+  const t=e.target;
+  if(t.closest('[data-wx],[data-wclose]')){$('#dWiz').close();return}
+  if(t.closest('[data-wpdf]')){const s=scales.find(x=>x.id===wsid);savePdf(s,s.cal.find(x=>x.id===wLast));return}
+  if(t.closest('[data-wshare]')){const s=scales.find(x=>x.id===wsid),c=s.cal.find(x=>x.id===wLast),p=buildPdf(s,c);if(p){const f=new File([p.d.output('blob')],p.name,{type:'application/pdf'});if(navigator.canShare&&navigator.canShare({files:[f]}))navigator.share({files:[f],title:p.name}).catch(()=>{});else saveFile(p.name,f)}return}
+  if(t.closest('[data-wb]')){w.step--;wRender();return}
+  if(t.closest('[data-wn]'))wNext();
+});
+$('#dWiz').addEventListener('close',()=>{if(w&&!wDone&&Object.keys(w).length>4)wSave();w=null});
+
+function buildPdf(s,c){
+  if(!window.jspdf){note('A biblioteca de PDF não carregou. Verifique a internet e tente de novo.');return null}
+  const full=!!c.rel,r=c.rel||{tp:s.tipo};
+  const dos=r.tp==='dos',x=r.res||{},d=new window.jspdf.jsPDF({unit:'mm',format:'a4'});let y=18;
+  const pg=()=>{if(y>272){d.addPage();y=18}};
+  const H=t=>{pg();y+=3;d.setFont('helvetica','bold');d.setFontSize(12);d.text(t,15,y);y+=2;d.line(15,y,195,y);y+=6};
+  const R=(a,b)=>{pg();d.setFontSize(10.5);d.setFont('helvetica','bold');d.text(a,15,y);d.setFont('helvetica','normal');d.text(String(b),95,y);y+=6};
+  const lin=a=>a.forEach(i=>{R('Linha '+(i%2+1)+' - pedido / tempo de volta',r['p'+(i+1)]+' t/h / '+r['s'+(i+1)]+' s');R('   fluxo encontrado / erro',fmt(x.f[i])+' t/h / '+fmt(x.e[i])+' %')});
+  d.setFont('helvetica','bold');d.setFontSize(16);d.text('Relatório de calibração - Balança'+(dos?' dosadora':r.tp==='flu'?' de fluxo':''),15,y);y+=4;
+  H('Identificação');R('Balança',s.nome);R('Local',s.local||'-');R('Data',fd(c.data));R('Executantes',c.e1+' e '+c.e2);
+  if(!full){H('Resultado');R('Erro inicial',fmt(c.ei)+' %');R('Erro final',fmt(c.ef)+' %');R('Tipo de registro','Lançamento manual')}
+  if(full){
+  H('Coleta de parâmetros');R('B-04 - Pulsos por metro',r.b04);R('C-02 - Tempo de volta (s)',r.c02);R('C-05 - Comprimento da mesa (m)',r.c05);R('C-08 - Peso padrão (kg)',r.c08);R('D-02 - Fator de correção',r.d02);R('D-06 - Pulsos por volta',r.d06);R('Tamanho da correia (D-06 / B-04)',fmt(x.cor!=null?x.cor:pn(r.cor),4)+' m');if(!dos)R('Totalização da balança',r.tot||'-');
+  H('Cálculo');R('Velocidade (correia / tempo de volta)',fmt(x.vel!=null?x.vel:pn(r.vel),4)+' m/s');R('Fluxo calculado (1 hora)',fmt(x.Q)+' t/h');
+  if(!dos){R('Tempo de 2 voltas',fmt(x.T)+' s');R('Totalização esperada',fmt(x.tons,4)+' t')}
+  H('Erro inicial');
+  if(dos){lin([0,1]);R('Erro inicial (média)',fmt(c.ei)+' %')}else{R('Tempo calculado / encontrado',fmt(x.T)+' s / '+r.t1+' s');R('Erro inicial',fmt(c.ei)+' %')}
+  H('Calibração');if(!dos&&r.tv)R('Tempo de volta aferido',r.tv+' s');
+  R('Novo D-06 (Input Belt)',r.d06n);R('Novo B-04',fmt(x.b04n)+' pulsos/m');R('Tara 01',r.k1);R('Tara 02',r.k2);R('Novo D-02 (Check weight)',r.d02n);R('Variação do D-02',fmt(x.dd)+' %');
+  H('Erro final');
+  if(dos){lin([2,3]);R('Erro final (média)',fmt(c.ef)+' %')}else{R('Tempo calculado / encontrado',fmt(x.T)+' s / '+r.t2+' s');R('Erro final',fmt(c.ef)+' %')}
+  if(r.ck){H('Encerramento');CK.forEach((t,i)=>R(t,r.ck[i]?'OK':'-'))}
+  }
+  if(c.obs){H('Observações');d.setFont('helvetica','normal');d.setFontSize(10.5);d.splitTextToSize(c.obs,180).forEach(t=>{pg();d.text(t,15,y);y+=5.5})}
+  y+=6;pg();d.setFont('helvetica','normal');d.setFontSize(8.5);
+  d.text('Velocidade = comprimento da correia / tempo de volta. Fluxo = (velocidade x peso padrão x 3,6) / comprimento da mesa.',15,y);y+=4.5;
+  d.text(dos?'Erro (%) = (fluxo encontrado / fluxo pedido - 1) x 100.':'Erro (%) = (tempo encontrado / tempo pedido - 1) x 100.',15,y);
+  return{d,name:'calibracao-'+s.nome.replace(/[^\w-]+/g,'_')+'-'+c.data+'.pdf'};
+}
+function savePdf(s,c){const p=c&&buildPdf(s,c);if(p)saveFile(p.name,p.d.output('blob'))}
+
+/* ===== Servidor online, perfis e sincronização ===== */
+const SERVIDOR_PADRAO=''; /* opcional: cole aqui o endereço /exec antes de hospedar; assim o executante só digita o código */
+const SRV='calib.srv.v2',CACHE='calib.cache.v2',OUT='calib.fila.v2',SEEN='calib.vistos.v2',DRAFT='calib.rascunho.';
+const ls={get:(k,d)=>{try{const v=localStorage.getItem(k);return v==null?d:JSON.parse(v)}catch(e){return d}},set:(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v));return true}catch(e){return false}},del:k=>{try{localStorage.removeItem(k)}catch(e){}}};
+const srv=()=>ls.get(SRV,null);
+const getOut=()=>ls.get(OUT,[]),setOut=a=>{if(!ls.set(OUT,a))note('Memória do aparelho cheia: não foi possível guardar a fila de envio.')};
+const getDraft=id=>ls.get(DRAFT+id,null),setDraft=(id,w)=>ls.set(DRAFT+id,w),dropDraft=id=>ls.del(DRAFT+id);
+const enc=o=>btoa(unescape(encodeURIComponent(JSON.stringify(o))));
+const hora=t=>new Date(t).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+let base=[],role=null,lastSync=null,netOk=null,syncP=null;const done={};
+function persist(){ls.set(CACHE,{base,role,lastSync})}
+function setRole(r){role=r||null;document.body.dataset.role=role||''}
+
+function applyOp(list,o){
+  const d=o.data||{};let s;
+  switch(o.action){
+    case 'saveScale':s=list.find(x=>x.id===d.scale.id);if(s)Object.assign(s,d.scale);else list.push(Object.assign({pm:'',po:'',cal:[]},d.scale));break;
+    case 'setPend':s=list.find(x=>x.id===d.balancaId);if(s){s.pm=d.pm;s.po=d.po}break;
+    case 'addCal':s=list.find(x=>x.id===d.balancaId);if(s&&!(s.cal||[]).some(c=>c.id===d.cal.id)){s.cal=s.cal||[];s.cal.push(d.cal)}break;
+    case 'delCal':list.forEach(x=>{x.cal=(x.cal||[]).filter(c=>c.id!==d.id)});break;
+    case 'delScale':return list.filter(x=>x.id!==d.id);
+    case 'import':(d.scales||[]).forEach(b=>{if(!b||!b.id)return;let t=list.find(x=>x.id===b.id);if(!t){t=Object.assign({},b,{cal:[]});list.push(t)}(b.cal||[]).forEach(c=>{if(!t.cal.some(x=>x.id===c.id))t.cal.push(c)})});break;
+  }
+  return list;
+}
+function recompute(){scales=getOut().reduce((l,o)=>applyOp(l,o),clone(base))}
+
+const ERR={'codigo-invalido':'Código de acesso inválido. Toque em "Acesso" e reconecte.','troque-codigo-admin':'No script do servidor, troque o CODIGO_ADMIN antes de usar o acesso de administrador.','sem-permissao':'Seu acesso não permite esta ação.','balanca-inexistente':'A balança foi excluída pelo administrador; o registro não foi salvo.','dados-incompletos':'Dados incompletos: o registro não foi salvo.','resposta-invalida':'O servidor respondeu de forma inesperada. Confira o endereço e se a implantação está liberada para "Qualquer pessoa".'};
+const errMsg=e=>ERR[e&&e.code]||('Erro no servidor: '+(e&&e.code||'desconhecido'));
+const AUTH=['codigo-invalido','troque-codigo-admin','resposta-invalida'];
+
+async function api(action,data,k){
+  k=k||srv();if(!k||!k.url)throw{code:'sem-config'};
+  if(navigator.onLine===false)throw{net:true};
+  const ac=new AbortController(),tm=setTimeout(()=>ac.abort(),40000);let r;
+  try{r=await fetch(k.url,{method:'POST',body:JSON.stringify(Object.assign({},data,{action,code:k.code})),signal:ac.signal})}catch(e){throw{net:true}}finally{clearTimeout(tm)}
+  let j;try{j=await r.json()}catch(e){throw{code:'resposta-invalida'}}
+  if(j.role)setRole(j.role);
+  if(!j.ok)throw{code:j.erro||'erro'};
+  return j;
+}
+
+function sync(){
+  if(syncP)return syncP;
+  syncP=(async()=>{
+    if(!srv())return;
+    setSync(true);let stop=false;
+    for(;;){
+      const q=getOut();if(!q.length)break;const o=q[0];
+      try{done[o.oid]={ok:true,r:await api(o.action,o.data)}}
+      catch(e){
+        if(e.net){stop='net';break}
+        if(AUTH.includes(e.code)){stop='auth';note(errMsg(e));break}
+        done[o.oid]={ok:false,e};note(errMsg(e));
+      }
+      setOut(getOut().filter(x=>x.oid!==o.oid));
+    }
+    if(!stop){
+      try{const j=await api('list');base=j.scales||[];lastSync=Date.now();novidades()}
+      catch(e){if(e.net)stop='net';else note(errMsg(e))}
+    }
+    if(stop==='net'&&getOut().length)ls.set('calib.offq',1);
+    else if(!stop&&!getOut().length&&ls.get('calib.offq',0)){ls.del('calib.offq');note('Registros guardados no aparelho foram enviados ao servidor.')}
+    netOk=stop!=='net';recompute();persist();render();setSync(false);
+  })().finally(()=>{syncP=null});
+  return syncP;
+}
+
+async function op(action,data){
+  const o={oid:'o'+Date.now().toString(36)+Math.random().toString(36).slice(2,7),action,data};
+  setOut(getOut().concat([o]));recompute();render();setSync(false);
+  if(!srv())return 'sem-config';
+  await sync();
+  const pend=()=>getOut().some(x=>x.oid===o.oid);
+  if(pend()&&netOk)await sync();
+  if(pend())return 'fila';
+  return done[o.oid]&&done[o.oid].ok?'ok':'erro';
+}
+
+function marcarVisto(id){const v=ls.get(SEEN,null);if(v){v.push(id);ls.set(SEEN,v)}}
+function novidades(){
+  const all=[];base.forEach(s=>(s.cal||[]).forEach(c=>all.push({s,c})));
+  const vistos=ls.get(SEEN,null);ls.set(SEEN,all.map(x=>x.c.id));
+  if(!vistos||role!=='admin')return;
+  const nov=all.filter(x=>!vistos.includes(x.c.id));
+  if(!nov.length)return;
+  note(nov.length===1?'Nova calibração recebida: '+nov[0].s.nome+' ('+fd(nov[0].c.data)+') por '+nov[0].c.e1+' e '+nov[0].c.e2+'.':nov.length+' novas calibrações recebidas.');
+}
+
+function setSync(busy){
+  const b=$('#sync');if(!b)return;const k=srv(),n=getOut().length;
+  if(!k){b.hidden=true;return}
+  b.hidden=false;b.className='sync'+(netOk===false?' off':n?' pend':'');
+  b.innerHTML=`<i></i>${busy?'Sincronizando…':(netOk===false?'Sem conexão':'Online')+(lastSync?' · atualizado às '+hora(lastSync):'')}${n?' · '+n+' aguardando envio':''} · ${role==='admin'?'Administrador':role==='exec'?'Executante':''}`;
+}
+
+/* e-mail do relatório (o servidor envia) */
+const TPN={dos:'Balança dosadora',flu:'Balança de fluxo'};
+function txtCurto(s,c){return (TPN[s.tipo]||'Balança')+' '+s.nome+': calibração de '+fd(c.data)+'. Erro inicial '+fmt(c.ei)+'%, final '+fmt(c.ef)+'%. Executantes: '+c.e1+' e '+c.e2+'.'}
+function payload(s,c){
+  const p=buildPdf(s,c);if(!p)return null;
+  const L=[(TPN[s.tipo]||'Balança')+': '+s.nome,s.local?'Local: '+s.local:'','Data: '+fd(c.data),'Executantes: '+c.e1+' e '+c.e2,'Erro inicial: '+fmt(c.ei)+' %','Erro final: '+fmt(c.ef)+' %',c.obs?'Observações: '+c.obs:'','','Relatório completo em anexo (PDF).'];
+  return{filename:p.name,pdf:p.d.output('datauristring').split(',')[1],assunto:'Calibração '+s.nome+' - '+fd(c.data)+' (erro inicial '+fmt(c.ei)+'%, final '+fmt(c.ef)+'%)',resumo:L.filter(x=>x!=='').join('\n'),resumoCurto:txtCurto(s,c)};
+}
+function addCal(s,c){marcarVisto(c.id);return op('addCal',Object.assign({balancaId:s.id,cal:c},payload(s,c)||{}))}
+const msgEnvio=r=>({ok:'Calibração registrada no servidor. O PDF segue para o e-mail do inspetor.',fila:'Sem conexão: a calibração ficou guardada no aparelho e será enviada quando a internet voltar.',erro:'Não foi possível registrar no servidor.','sem-config':'Aparelho não conectado ao servidor.'}[r]||'');
+
+/* tela de conexão */
+function openCfg(){const f=$('#fCfg'),k=srv();f.url.value=k&&k.url||SERVIDOR_PADRAO;f.code.value='';$('#cfgMsg').textContent='';$('#dCfg').showModal()}
+$('#fCfg').onsubmit=async e=>{
+  e.preventDefault();const f=e.target,k={url:f.url.value.trim(),code:f.code.value.trim()},m=$('#cfgMsg');
+  if(!/^https?:\/\//.test(k.url)){m.textContent='Informe o endereço completo, começando com https://';return}
+  m.textContent='Conectando…';
+  try{
+    const j=await api('list',{},k);
+    const old=srv();if(old&&old.url!==k.url){ls.del(SEEN)}
+    ls.set(SRV,k);base=j.scales||[];lastSync=Date.now();netOk=true;ls.set(SEEN,null);novidades();recompute();persist();
+    $('#dCfg').close();render();setSync(false);note('Conectado como '+(role==='admin'?'administrador':'executante')+'.');
+    if(getOut().length)sync();
+  }catch(x){m.textContent=x.net?'Sem conexão com o servidor. Verifique a internet e o endereço.':errMsg(x)}
+};
+$('#dCfg').addEventListener('close',()=>{if(!srv())setTimeout(()=>{if(!srv()&&!$('#dCfg').open)$('#dCfg').showModal()},50)});
+
+/* painel de acesso */
+function renderAcc(msg){
+  const n=getOut().length,adm=role==='admin',old=(ls.get('calib.balancas.v1',[])||[]).length;
+  $('#accBody').innerHTML=`<div class="sh"><h2>Acesso</h2><button type="button" class="x" data-close aria-label="Fechar">×</button></div>
+  <div class="res"><span>Perfil: <b>${adm?'Administrador':role==='exec'?'Executante':'-'}</b></span><span>${netOk===false?'Sem conexão com o servidor':'Conectado ao servidor'}${lastSync?' · atualizado às '+hora(lastSync):''}</span><span>${n?n+' registro(s) aguardando envio':'Nada aguardando envio'}</span></div>
+  <button class="btn pri" type="button" data-a="sync">Sincronizar agora</button>
+  ${adm?`<h3>Administração</h3><p class="small mut">Mande o link do executante para o time. Ao abrir, o app já fica conectado com acesso de executante.</p>
+  <button class="btn" type="button" data-a="lexec">Enviar link do executante</button>
+  <button class="btn" type="button" data-a="ladm">Copiar meu link de administrador</button>
+  <button class="btn" type="button" data-a="sheet">Abrir planilha de dados</button>
+  <button class="btn" type="button" data-a="mail">Enviar e-mail de teste</button>
+  ${old?`<button class="btn" type="button" data-a="mig">Enviar ${old} balança(s) salvas neste aparelho</button>`:''}`:''}
+  <p class="small" id="accMsg">${msg?esc(msg):''}</p>
+  <button class="btn" type="button" data-a="out">Desconectar este aparelho</button>`;
+}
+async function partilhar(titulo,link){
+  if(navigator.share){try{await navigator.share({title:titulo,text:titulo+'\n'+link});return 'Link enviado.'}catch(e){if(e&&e.name==='AbortError')return ''}}
+  try{await navigator.clipboard.writeText(link);return 'Link copiado. Cole no WhatsApp ou e-mail.'}catch(e){prompt('Copie o link:',link);return ''}
+}
+$('#accBtn').onclick=()=>{renderAcc();$('#dAcc').showModal()};
+$('#accBody').addEventListener('click',async e=>{
+  const b=e.target.closest('[data-a]');if(!b)return;const a=b.dataset.a,k=srv(),M=t=>{const m=$('#accMsg');if(m)m.textContent=t};
+  const link=code=>location.origin+location.pathname+'#cfg='+enc({url:k.url,code});
+  try{
+    if(a==='sync'){M('Sincronizando…');await sync();renderAcc(netOk?'Sincronizado.':'Sem conexão com o servidor.')}
+    else if(a==='lexec'){const j=await api('execLink');M(await partilhar('Acesso do executante - Calibração de balanças',link(j.codigoExec)))}
+    else if(a==='ladm'){try{await navigator.clipboard.writeText(link(k.code));M('Link de administrador copiado. Não compartilhe: ele dá acesso total.')}catch(x){prompt('Seu link de administrador (não compartilhe):',link(k.code))}}
+    else if(a==='sheet'){const j=await api('info');window.open(j.planilha,'_blank','noopener')}
+    else if(a==='mail'){
+      if(!window.jspdf){M('A biblioteca de PDF não carregou. Verifique a internet.');return}
+      const d=new window.jspdf.jsPDF({unit:'mm',format:'a4'});d.setFontSize(14);d.text('Teste de envio - Calibração de balanças',15,20);
+      M('Enviando…');const j=await api('testEmail',{filename:'teste.pdf',pdf:d.output('datauristring').split(',')[1],assunto:'Teste de envio - Calibração de balanças',resumo:'Se este e-mail chegou com o PDF anexo, o envio automático está funcionando.'});
+      M(j.email==='enviado'?'E-mail de teste enviado. Confira a caixa de entrada e o lixo eletrônico.':'Falha no e-mail: '+j.email);
+    }
+    else if(a==='mig'){
+      if(!confirm('Enviar ao servidor as balanças salvas neste aparelho? Itens que já existem não são duplicados.'))return;
+      const r=await op('import',{scales:ls.get('calib.balancas.v1',[])});if(r==='ok')ls.del('calib.balancas.v1');renderAcc(r==='ok'?'Dados enviados ao servidor.':msgEnvio(r));
+    }
+    else if(a==='out'){
+      const n=getOut().length;
+      if(!confirm(n?'Há '+n+' registro(s) ainda não enviados, que serão perdidos. Desconectar mesmo assim?':'Desconectar este aparelho do servidor?'))return;
+      [SRV,CACHE,OUT,SEEN].forEach(ls.del);base=[];setRole(null);lastSync=null;netOk=null;recompute();$('#dAcc').close();cat=null;render();setSync(false);openCfg();
+    }
+  }catch(x){M(x.net?'Sem conexão com o servidor.':errMsg(x))}
+});
+
+/* ===== Senha de edição (trava na página) ===== */
+const PWH='206b16537b0e65345e5bdd8d49bbf3fa65d24ca9d994bd9d687166084848cd1f';
+let unlocked=true,pwNext=null;
+async function sha(t){const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(t));return[...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('')}
+function showLock(){}
+function askPw(fn){pwNext=fn;$('#fPw').reset();$('#pwErr').textContent='';$('#dPw').showModal();$('#fPw').pw.focus()}
+function auth(fn){unlocked?fn():askPw(fn)}
+
+/* ===== Exportar tudo (CSV) ===== */
+async function exportCsv(){
+  const T={dos:'Dosadora',flu:'Fluxo'},S={g:'Em dia',y:'Atenção',r:'Vencida'};
+  const q=v=>'"'+String(v==null?'':v).replace(/"/g,'""')+'"',n=v=>v==null||v===''?'':String(v).replace('.',',');
+  const rows=[['Tipo','Balança','Local','Situação atual','Data da calibração','Erro inicial (%)','Erro final (%)','Executante 1','Executante 2','Observações','Novo B04','Novo D06','Novo D02','Tara 01','Tara 02','Pendências mecânicas','Pendências operacionais']];
+  scales.slice().sort((a,b)=>a.nome.localeCompare(b.nome)).forEach(s=>{
+    const base=[T[s.tipo]||'Sem categoria',s.nome,s.local||'',S[stat(s).k]],pend=[s.pm||'',s.po||''],cs=sorted(s,-1);
+    if(!cs.length)rows.push([...base,...Array(11).fill(''),...pend]);
+    cs.forEach(c=>{const r=c.rel||{},x=r.res||{};rows.push([...base,fd(c.data),n(c.ei),n(c.ef),c.e1,c.e2,c.obs||'',x.b04n!=null?n(+x.b04n.toFixed(4)):'',n(r.d06n),n(r.d02n),r.k1||'',r.k2||'',...pend])});
+  });
+  const csv='\ufeff'+rows.map(r=>r.map(q).join(';')).join('\r\n');
+  saveFile('calibracao-balancas-'+iso(new Date())+'.csv',new Blob([csv],{type:'text/csv;charset=utf-8'}));
+}
+$('#expBtn').onclick=exportCsv;
+$('#bkBtn').onclick=()=>saveFile('backup-balancas-'+iso(new Date())+'.json',new Blob([JSON.stringify({v:1,scales},null,1)],{type:'application/json'}));
+$('#rsBtn').onclick=()=>$('#rsFile').click();
+$('#rsFile').onchange=async e=>{
+  const f=e.target.files[0];e.target.value='';if(!f)return;
+  let j;try{j=JSON.parse(await f.text());if(!Array.isArray(j.scales))throw 0}catch(x){note('Arquivo de backup inválido.');return}
+  if(confirm('Enviar ao servidor as '+j.scales.length+' balança(s) do backup? Itens que já existem não são duplicados.'))op('import',{scales:j.scales}).then(r=>note(r==='ok'?'Backup enviado ao servidor.':msgEnvio(r)));
+};
+document.addEventListener('submit',e=>{
+  if(unlocked||e.target.id==='fPw')return;
+  e.preventDefault();e.stopImmediatePropagation();
+  const f=e.target;askPw(()=>f.requestSubmit());
+},true);
+$('#fPw').onsubmit=async e=>{
+  e.preventDefault();let ok=false;
+  try{ok=(await sha(e.target.pw.value.trim()))===PWH}catch(x){}
+  if(!ok){$('#pwErr').textContent='Senha incorreta.';return}
+  unlocked=true;try{sessionStorage.setItem('u','1')}catch(x){}
+  const f=pwNext;pwNext=null;$('#dPw').close();showLock();if(f)f();
+};
+$('#dPw').addEventListener('close',()=>{pwNext=null});
+showLock();
+setInterval(render,36e5);
+
+/* ===== Início ===== */
+(function(){
+  const c=ls.get(CACHE,null);if(c){base=c.base||[];setRole(c.role);lastSync=c.lastSync||null}
+  if(location.hash.indexOf('#cfg=')===0){
+    try{const k=JSON.parse(decodeURIComponent(escape(atob(location.hash.slice(5)))));
+      if(k.url&&k.code){const old=srv();if(old&&old.url!==k.url){base=[];ls.del(CACHE);ls.del(SEEN)}ls.set(SRV,{url:k.url,code:k.code});if(!old||old.code!==k.code)setRole(null)}}catch(e){}
+    history.replaceState(null,'',location.pathname+location.search);
+  }
+  recompute();render();setSync(false);
+  if(!srv())openCfg();else sync();
+  setInterval(()=>{if(document.visibilityState==='visible')sync()},45000);
+  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')sync()});
+  window.addEventListener('online',()=>sync());
+  $('#sync').onclick=()=>sync();
+})();
+if('serviceWorker' in navigator&&location.protocol.indexOf('http')===0)navigator.serviceWorker.register('sw.js').catch(()=>{});
+</script>
+</body>
+</html>
