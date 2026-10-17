@@ -11,9 +11,9 @@
 <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@600;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
-:root{--bg:#edf0f3;--card:#fff;--ink:#14202b;--mut:#5b6976;--line:#d3dae1;--acc:#1f5c8b;--g:#23844a;--y:#f2b705;--r:#c92f27;--ci:#2a6fdb;--cf:#7a4fd0;--in:#f6f8fa;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
-@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){color-scheme:dark;--bg:#0f161d;--card:#18212a;--ink:#e8edf2;--mut:#93a1ae;--line:#2b3742;--acc:#6db2e8;--ci:#6aa2ff;--cf:#b190ff;--in:#121a21}}
-:root[data-theme="dark"]{color-scheme:dark;--bg:#0f161d;--card:#18212a;--ink:#e8edf2;--mut:#93a1ae;--line:#2b3742;--acc:#6db2e8;--ci:#6aa2ff;--cf:#b190ff;--in:#121a21}
+:root{--bg:#edf0f3;--card:#fff;--ink:#14202b;--mut:#5b6976;--line:#d3dae1;--acc:#1f5c8b;--g:#23844a;--y:#f2b705;--r:#c92f27;--ci:#1f5aa6;--cf:#b0285f;--ok:#23844a;--nok:#c92f27;--in:#f6f8fa;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){color-scheme:dark;--bg:#0f161d;--card:#18212a;--ink:#e8edf2;--mut:#93a1ae;--line:#2b3742;--acc:#6db2e8;--ci:#4b8fe2;--cf:#d9547f;--ok:#3aa866;--nok:#ef6159;--in:#121a21}}
+:root[data-theme="dark"]{color-scheme:dark;--bg:#0f161d;--card:#18212a;--ink:#e8edf2;--mut:#93a1ae;--line:#2b3742;--acc:#6db2e8;--ci:#4b8fe2;--cf:#d9547f;--ok:#3aa866;--nok:#ef6159;--in:#121a21}
 *{box-sizing:border-box}
 html{scroll-padding-top:env(safe-area-inset-top,0px)}
 body{margin:0;background:var(--bg);color:var(--ink);font:400 16px/1.4 Barlow,system-ui,-apple-system,"Segoe UI",sans-serif}
@@ -93,9 +93,12 @@ dialog::backdrop{background:rgba(8,14,20,.6)}
 .x{margin-left:auto;font-size:26px;line-height:1;border:0;background:none;color:var(--mut);cursor:pointer;padding:4px 8px}
 .box{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px}
 .box h3{margin-bottom:8px}
-.leg{display:flex;gap:16px;font-size:14px;margin-bottom:4px}
+.leg{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:14px;margin-bottom:4px}
 .leg span::before{content:"";display:inline-block;width:12px;height:12px;margin-right:6px;vertical-align:-1px}
-.leg .a::before{background:var(--ci);border-radius:50%}.leg .b::before{background:var(--cf);border-radius:2px}
+.leg .a::before{background:var(--ci);border-radius:3px}.leg .b::before{background:var(--cf);border-radius:3px}.leg .ok::before{background:var(--ok);border-radius:3px}.leg .nok::before{background:var(--nok);border-radius:3px}.leg .lim::before{width:18px;height:0;border-top:2px dashed var(--mut);vertical-align:4px}
+.av{background:var(--in);border:1px solid var(--line);border-left:4px solid var(--mut);border-radius:8px;padding:9px 12px;font-size:15px;display:flex;flex-direction:column;gap:8px}.av.g{border-left-color:var(--g)}.av.r{border-left-color:var(--r)}.av .btn{align-self:flex-start;text-decoration:none}
+.chart{display:flex;align-items:flex-start;margin-top:6px}.chart .yax{flex:none}.cscroll{overflow-x:auto;flex:1;min-width:0;-webkit-overflow-scrolling:touch}.chart svg{display:block;width:auto;height:auto;max-width:none}
+.chart .bar{transition:opacity .15s}.chart .bar:hover{opacity:.82}
 svg{display:block;width:100%;height:auto}
 .f{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .f label{display:flex;flex-direction:column;gap:3px;font-size:14px;color:var(--mut)}
@@ -168,7 +171,6 @@ ul.h li:first-child{border-top:0}
   <div class="sheet">
     <div class="sh" id="dHead"></div>
     <div class="box"><h3>Histórico de erro</h3>
-      <div class="leg"><span class="a">Erro inicial</span><span class="b">Erro final</span></div>
       <div id="dChart"></div>
     </div>
     <div class="box" id="bWiz" hidden><h3>Calibração guiada</h3><p class="mut small">Passo a passo com cálculo automático e relatório em PDF.</p><div class="wb" style="margin-top:10px"><button class="btn pri" id="bWizGo"></button><button class="btn" id="bWizDel" hidden>Descartar</button></div></div>
@@ -181,7 +183,8 @@ ul.h li:first-child{border-top:0}
     </div>
     <div class="box"><h3>Registrar calibração</h3>
       <form id="fCal" class="f">
-        <label class="w">Data da calibração<input type="date" name="data" required></label>
+        <label>Data da calibração<input type="date" name="data" required></label>
+        <label>Número da O.S.<input name="os" required maxlength="30" autocomplete="off"></label>
         <label>Erro inicial (%)<input name="ei" inputmode="decimal" required placeholder="0,00"></label>
         <label>Erro final (%)<input name="ef" inputmode="decimal" required placeholder="0,00"></label>
         <label>Executante 1<input name="e1" required maxlength="60" list="nomes" autocomplete="off"></label>
@@ -189,6 +192,7 @@ ul.h li:first-child{border-top:0}
         <label class="w">Observações<textarea name="obs" maxlength="500"></textarea></label>
         <button class="btn pri w" type="submit">Registrar calibração</button>
       </form>
+      <div id="calAv" style="margin-top:10px"></div>
       <datalist id="nomes"></datalist>
     </div>
     <div class="box"><h3>Calibrações anteriores</h3><ul class="h" id="dHist"></ul></div>
@@ -206,17 +210,26 @@ const daysSince=s=>{const n=new Date();return Math.round((new Date(n.getFullYear
 const num=v=>Number(v).toLocaleString('pt-BR',{maximumFractionDigits:4});
 const pl=n=>n+' dia'+(n===1?'':'s');
 const clone=o=>JSON.parse(JSON.stringify(o));
+/* tolerância do erro (%): dentro quando o valor absoluto for menor que o limite */
+const TOL={dos:0.5,flu:1};
+const tolTxt=tp=>'±'+String(TOL[tp]).replace('.',',')+' %';
+const dentro=(tp,v)=>TOL[tp]!=null&&isFinite(v)&&Math.abs(v)<TOL[tp];
+const fora=(tp,v)=>TOL[tp]!=null&&isFinite(v)&&Math.abs(v)>=TOL[tp];
+const waHref=t=>'https://wa.me/5531982613138'+(t?'?text='+encodeURIComponent(t).replace(/'/g,'%27'):'');
+const pulou=c=>!!(c&&c.rel&&c.rel.pulo);
+const osDe=c=>String((c&&(c.os||(c.rel&&c.rel.os)))||'').trim();
 let scales=[],filter='all',openId=null;
 function saveFile(name,blob){const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},1500)}
 
 const sorted=(s,dir)=>(s.cal||[]).slice().sort((a,b)=>(a.data<b.data?-1:a.data>b.data?1:String(a.id)<String(b.id)?-1:String(a.id)>String(b.id)?1:0)*dir);
 function stat(s){
   const l=sorted(s,-1)[0];
-  if(!l)return{k:'r',d:Infinity,l,t:'Vencida · sem calibração registrada'};
+  if(!l)return{k:'r',q:'r',d:Infinity,l,t:'Vencida · sem calibração registrada'};
   const d=daysSince(l.data);
-  if(d>=30)return{k:'r',d,l,t:'Vencida · '+pl(d)+' sem calibrar'};
-  if(d>=20)return{k:'y',d,l,t:'Atenção · vence em '+pl(30-d)};
-  return{k:'g',d,l,t:'Em dia · vence em '+pl(30-d)};
+  if(d>=30)return{k:'r',q:'r',d,l,t:'Vencida · '+pl(d)+' sem calibrar'};
+  if(fora(s.tipo,l.ef))return{k:'r',q:'t',d,l,t:'Fora da tolerância ('+tolTxt(s.tipo)+')'};
+  if(d>=20)return{k:'y',q:'y',d,l,t:'Atenção · vence em '+pl(30-d)};
+  return{k:'g',q:'g',d,l,t:'Em dia · vence em '+pl(30-d)};
 }
 const lamp=(k,big)=>`<span class="tl${big?' big':''}" data-k="${k}" role="img" aria-label="Farol ${{g:'verde',y:'amarelo',r:'vermelho'}[k]}"><i class="r"></i><i class="y"></i><i class="g"></i></span>`;
 const tags=s=>(s.pm?'<p class="small pend">Pendência mecânica</p>':'')+(s.po?'<p class="small pend">Pendência operacional</p>':'');
@@ -230,33 +243,52 @@ function arm(b,fn,label){
 
 function renderList(){
   const rows=inCat().map(s=>({s,t:stat(s)}));
-  const c={g:0,y:0,r:0};rows.forEach(r=>c[r.t.k]++);
-  $('#chips').innerHTML=[['all','Todas',rows.length],['g','Em dia',c.g],['y','Atenção',c.y],['r','Vencidas',c.r]]
-    .map(([k,n,q])=>`<button class="chip${filter===k?' on':''}" data-f="${k}">${k!=='all'?`<i class="dot ${k}"></i>`:''}${n} <b>${q}</b></button>`).join('');
-  const vis=rows.filter(r=>filter==='all'||r.t.k===filter).sort((a,b)=>(a.t.d===b.t.d?0:b.t.d>a.t.d?1:-1)||a.s.nome.localeCompare(b.s.nome));
+  const c={g:0,y:0,r:0,t:0};rows.forEach(r=>c[r.t.q]++);
+  $('#chips').innerHTML=[['all','Todas',rows.length],['g','Em dia',c.g],['y','Atenção',c.y],['r','Vencidas',c.r],['t','Fora da tolerância',c.t]]
+    .filter(([k,,q])=>k!=='t'||q||filter==='t')
+    .map(([k,n,q])=>`<button class="chip${filter===k?' on':''}" data-f="${k}">${k!=='all'?`<i class="dot ${k==='t'?'r':k}"></i>`:''}${n} <b>${q}</b></button>`).join('');
+  const RK={r:0,t:1,y:2,g:3};
+  const vis=rows.filter(r=>filter==='all'||r.t.q===filter).sort((a,b)=>(RK[a.t.q]-RK[b.t.q])||(a.t.d===b.t.d?0:b.t.d>a.t.d?1:-1)||a.s.nome.localeCompare(b.s.nome));
   $('#list').innerHTML=vis.length?vis.map(({s,t})=>{
     const l=t.l;
-    return `<article class="card" data-id="${s.id}" tabindex="0" role="button">${lamp(t.k)}<div class="cb"><h3>${esc(s.nome)}</h3>${s.local?`<p class="mut small">${esc(s.local)}</p>`:''}<span class="st ${t.k}">${t.t}</span>${tags(s)}${l?`<p class="small">Calibrada em ${fd(l.data)} · há ${pl(t.d)}</p><p class="small">Erro inicial <b>${num(l.ei)} %</b> → final <b>${num(l.ef)} %</b></p>`:''}</div></article>`;
+    return `<article class="card" data-id="${s.id}" tabindex="0" role="button">${lamp(t.k)}<div class="cb"><h3>${esc(s.nome)}</h3>${s.local?`<p class="mut small">${esc(s.local)}</p>`:''}<span class="st ${t.k}">${t.t}</span>${tags(s)}${l?`<p class="small">Calibrada em ${fd(l.data)} · há ${pl(t.d)}</p><p class="small">${pulou(l)?`Erro inicial <b>${num(l.ei)} %</b> · dentro da tolerância, sem ajuste`:`Erro inicial <b>${num(l.ei)} %</b> → final <b>${num(l.ef)} %</b>`}</p>`:''}</div></article>`;
   }).join(''):`<p class="empty">${rows.length?'Nenhuma balança nesta situação.':(role==='admin'?'Nenhuma balança cadastrada. Toque em “Nova balança” para começar.':'Nenhuma balança cadastrada pelo administrador ainda.')}</p>`;
 }
 
 function chart(s){
-  const c=sorted(s,1);
+  const c=sorted(s,1),tp=s.tipo,tol=TOL[tp];
   if(!c.length)return '<p class="mut small">Registre a primeira calibração para ver o histórico.</p>';
-  const W=360,H=210,L=52,R=14,T=14,B=30;
-  const v=c.flatMap(x=>[x.ei,x.ef]);let lo=Math.min(0,...v),hi=Math.max(0,...v);
-  if(hi===lo)hi=lo+1;const p=(hi-lo)*.12;lo-=p;hi+=p;
-  const X=i=>c.length===1?(L+W-R)/2:L+i*(W-L-R)/(c.length-1);
-  const Y=y=>T+(hi-y)*(H-T-B)/(hi-lo);
-  let g='';
-  for(let k=0;k<=4;k++){const y=lo+(hi-lo)*k/4;g+=`<line x1="${L}" x2="${W-R}" y1="${Y(y)}" y2="${Y(y)}" stroke="var(--line)"/><text x="${L-6}" y="${Y(y)+4}" text-anchor="end" font-size="11" fill="var(--mut)">${num(+y.toFixed(3))}%</text>`}
-  g+=`<line x1="${L}" x2="${W-R}" y1="${Y(0)}" y2="${Y(0)}" stroke="var(--mut)" stroke-dasharray="4 3"/>`;
-  const step=Math.ceil(c.length/6);
-  c.forEach((x,i)=>{if(i%step===0||i===c.length-1)g+=`<text x="${X(i)}" y="${H-10}" text-anchor="middle" font-size="11" fill="var(--mut)">${fd(x.data).slice(0,5)}</text>`});
-  const line=(key,col,sq)=>`<polyline fill="none" stroke="var(${col})" stroke-width="2.5" points="${c.map((x,i)=>X(i)+','+Y(x[key])).join(' ')}"/>`+
-    c.map((x,i)=>{const t=`<title>${fd(x.data)}: ${num(x[key])} %</title>`;
-      return sq?`<rect x="${X(i)-4.5}" y="${Y(x[key])-4.5}" width="9" height="9" rx="1.5" fill="var(${col})">${t}</rect>`:`<circle cx="${X(i)}" cy="${Y(x[key])}" r="5" fill="var(${col})">${t}</circle>`}).join('');
-  return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Gráfico de erro inicial e final por calibração">${g}${line('ei','--ci',false)}${line('ef','--cf',true)}</svg><p class="mut small">Erro em % · linha tracejada = erro zero</p>`;
+  const H=252,T=26,B=58,PH=H-T-B,AX=46,BW=28,IG=8,GW=BW*2+IG,GAP=28;
+  const v=c.flatMap(x=>[x.ei,x.ef]).filter(x=>isFinite(x));if(tol)v.push(tol,-tol);
+  let hi=Math.max(0,...v),lo=Math.min(0,...v);
+  const raw=(hi-lo)/4||0.25,mag=Math.pow(10,Math.floor(Math.log10(raw))),stp=[1,2,2.5,5,10].map(m=>m*mag).find(m=>m>=raw);
+  hi=Math.ceil(hi/stp-1e-9)*stp;lo=Math.floor(lo/stp+1e-9)*stp;if(hi===lo)hi=lo+stp;
+  const Y=y=>T+(hi-y)*PH/(hi-lo),y0=Y(0);
+  const pct=x=>(Math.abs(x)<1e-9?0:x).toLocaleString('pt-BR',{maximumFractionDigits:2});
+  const ticks=[];for(let t=lo;t<=hi+stp/2;t+=stp)ticks.push(+t.toFixed(6));
+  const slot=Math.max(GW+GAP,240/c.length),W=Math.round(slot*c.length);
+  let ax='',g='';
+  ticks.forEach(t=>{ax+=`<text x="${AX-6}" y="${Y(t)+4}" text-anchor="end" font-size="11" fill="var(--mut)">${pct(t)}%</text>`;g+=`<line x1="0" x2="${W}" y1="${Y(t)}" y2="${Y(t)}" stroke="var(--line)" stroke-width="1"/>`});
+  if(tol)[tol,-tol].forEach(t=>{g+=`<line x1="0" x2="${W}" y1="${Y(t)}" y2="${Y(t)}" stroke="var(--mut)" stroke-width="1.5" stroke-dasharray="6 4"/>`});
+  g+=`<line x1="0" x2="${W}" y1="${y0}" y2="${y0}" stroke="var(--mut)" stroke-width="1.5"/>`;
+  const cor=(val,def)=>tol?(dentro(tp,val)?'--ok':'--nok'):def;
+  const sit=val=>tol?(dentro(tp,val)?' · dentro da tolerância':' · fora da tolerância'):'';
+  const bar=(x,val,col,lab)=>{
+    const y1=Y(val),h=Math.abs(y1-y0),r=Math.min(4,h);
+    const d=val>=0?`M${x} ${y0}V${y1+r}Q${x} ${y1} ${x+r} ${y1}H${x+BW-r}Q${x+BW} ${y1} ${x+BW} ${y1+r}V${y0}Z`
+                  :`M${x} ${y0}V${y1-r}Q${x} ${y1} ${x+r} ${y1}H${x+BW-r}Q${x+BW} ${y1} ${x+BW} ${y1-r}V${y0}Z`;
+    const ty=val>=0?y1-6:y1+15;
+    return `<path class="bar" d="${d}" fill="var(${col})"><title>${lab}: ${pct(val)} %${sit(val)}</title></path><text x="${x+BW/2}" y="${ty}" text-anchor="middle" font-size="11" font-weight="600" fill="var(--ink)" stroke="var(--card)" stroke-width="4" stroke-linejoin="round" paint-order="stroke">${pct(val)}</text>`;
+  };
+  const lbl=(x,t)=>`<text x="${x}" y="${H-29}" text-anchor="middle" font-size="10" fill="var(--mut)">${t}</text>`;
+  c.forEach((x,i)=>{
+    const gx=i*slot+(slot-GW)/2,dt=fd(x.data);
+    if(pulou(x)){const bx=gx+(GW-BW)/2;g+=bar(bx,x.ei,cor(x.ei,'--ci'),dt+' · Erro inicial (sem ajuste)')+lbl(bx+BW/2,'sem ajuste')}
+    else g+=bar(gx,x.ei,cor(x.ei,'--ci'),dt+' · Erro inicial')+bar(gx+BW+IG,x.ef,cor(x.ef,'--cf'),dt+' · Erro final')+lbl(gx+BW/2,'inicial')+lbl(gx+BW+IG+BW/2,'final');
+    g+=`<text x="${gx+GW/2}" y="${H-11}" text-anchor="middle" font-size="11" font-weight="600" fill="var(--ink)">${dt.slice(0,6)+dt.slice(8)}</text>`;
+  });
+  const leg=tol?`<div class="leg"><span class="ok">Dentro da tolerância</span><span class="nok">Fora da tolerância</span><span class="lim">Limite ${tolTxt(tp)}</span></div>`:`<div class="leg"><span class="a">Erro inicial</span><span class="b">Erro final</span></div>`;
+  return `${leg}<div class="chart"><svg class="yax" width="${AX}" height="${H}" aria-hidden="true">${ax}</svg><div class="cscroll"><svg width="${W}" height="${H}" role="img" aria-label="Erro inicial e final de cada calibração, em %${tol?', com limite de tolerância de '+tolTxt(tp):''}">${g}</svg></div></div><p class="mut small">Erro em % · acima da linha do zero = positivo, abaixo = negativo${c.length*slot>300?' · arraste para ver as anteriores':''}</p>`;
 }
 
 function renderDetail(){
@@ -266,8 +298,8 @@ function renderDetail(){
   $('#dHead').innerHTML=`${lamp(t.k,true)}<div><h2>${esc(s.nome)}</h2>${s.local?`<p class="mut">${esc(s.local)}</p>`:''}<span class="st ${t.k}">${t.t}</span>${l?`<p class="small">Última calibração em ${fd(l.data)} (há ${pl(t.d)})</p>`:''}<label class="small mut tp adm">Tipo: <select id="selTipo">${!s.tipo?'<option value="">Escolher…</option>':''}<option value="dos"${s.tipo==='dos'?' selected':''}>Dosadora</option><option value="flu"${s.tipo==='flu'?' selected':''}>De fluxo</option></select></label><button class="lnk adm" id="bDel">Excluir balança</button></div><button class="x" data-close aria-label="Fechar">×</button>`;
   ['pm','po'].forEach(k=>{const ta=$('#'+k);if(!ta.dataset.dirty)ta.value=s[k]||''});
   $('#bWiz').hidden=!['flu','dos'].includes(s.tipo);const dr=getDraft(s.id);$('#bWizGo').textContent=dr?'Continuar calibração em andamento':'Iniciar calibração guiada';$('#bWizDel').hidden=!dr;
-  $('#dChart').innerHTML=chart(s);
-  $('#dHist').innerHTML=sorted(s,-1).map(c=>`<li><div class="hr"><b>${fd(c.data)}</b><span>${num(c.ei)} % → ${num(c.ef)} %</span></div><p class="small mut">Executantes: ${esc(c.e1)} e ${esc(c.e2)}</p>${c.obs?`<p class="small">${esc(c.obs)}</p>`:''}<button class="lnk" data-pdf="${c.id}">Baixar relatório (PDF)</button><button class="lnk adm" data-c="${c.id}">Excluir registro</button></li>`).join('')||'<li class="mut small">Nenhum registro ainda.</li>';
+  $('#dChart').innerHTML=chart(s);{const sc=$('#dChart .cscroll');if(sc)sc.scrollLeft=sc.scrollWidth}
+  $('#dHist').innerHTML=sorted(s,-1).map(c=>`<li><div class="hr"><b>${fd(c.data)}</b><span>${pulou(c)?num(c.ei)+' % · sem ajuste':`${num(c.ei)} % → ${num(c.ef)} %`}</span></div><p class="small mut">${osDe(c)?'O.S. '+esc(osDe(c))+' · ':''}Executantes: ${esc(c.e1)} e ${esc(c.e2)}</p>${c.obs?`<p class="small">${esc(c.obs)}</p>`:''}<button class="lnk" data-pdf="${c.id}">Baixar relatório (PDF)</button><button class="lnk adm" data-c="${c.id}">Excluir registro</button></li>`).join('')||'<li class="mut small">Nenhum registro ainda.</li>';
   const names=new Set();scales.forEach(x=>(x.cal||[]).forEach(c=>{names.add(c.e1);names.add(c.e2)}));
   $('#nomes').innerHTML=[...names].map(n=>`<option value="${esc(n)}">`).join('');
 }
@@ -277,8 +309,8 @@ const inCat=()=>scales.filter(s=>(s.tipo||'sem')===cat);
 function renderHome(){
   const ks=['dos','flu'];if(scales.some(s=>!s.tipo))ks.push('sem');
   $('#home').innerHTML=ks.map(k=>{
-    const l=scales.filter(s=>(s.tipo||'sem')===k),c={g:0,y:0,r:0};l.forEach(s=>c[stat(s).k]++);
-    return `<button class="tile" data-cat="${k}"><h2>${CATS[k]}</h2><p class="mut">${l.length?pl(l.length).replace('dia','balança'):'Nenhuma cadastrada'}</p><div class="cnt"><span><i class="dot g"></i>${c.g} em dia</span><span><i class="dot y"></i>${c.y} atenção</span><span><i class="dot r"></i>${c.r} vencida${c.r===1?'':'s'}</span></div></button>`}).join('');
+    const l=scales.filter(s=>(s.tipo||'sem')===k),c={g:0,y:0,r:0,t:0};l.forEach(s=>c[stat(s).q]++);
+    return `<button class="tile" data-cat="${k}"><h2>${CATS[k]}</h2><p class="mut">${l.length?pl(l.length).replace('dia','balança'):'Nenhuma cadastrada'}</p><div class="cnt"><span><i class="dot g"></i>${c.g} em dia</span><span><i class="dot y"></i>${c.y} atenção</span><span><i class="dot r"></i>${c.r} vencida${c.r===1?'':'s'}</span>${c.t?`<span><i class="dot r"></i>${c.t} fora da tolerância</span>`:''}</div></button>`}).join('');
 }
 function showView(){
   const h=!cat;
@@ -293,7 +325,7 @@ function render(){
 
 $('#chips').onclick=e=>{const b=e.target.closest('[data-f]');if(b){filter=b.dataset.f;renderList()}};
 const openScale=id=>{
-  openId=id;const f=$('#fCal');f.reset();f.data.value=iso(new Date());['pm','po'].forEach(k=>delete $('#'+k).dataset.dirty);
+  openId=id;$('#calAv').innerHTML='';const f=$('#fCal');f.reset();f.data.value=iso(new Date());['pm','po'].forEach(k=>delete $('#'+k).dataset.dirty);
   $('#dSc').showModal();renderDetail();$('#dSc').scrollTop=0;
 };
 $('#list').onclick=e=>{const c=e.target.closest('.card');if(c)openScale(c.dataset.id)};
@@ -325,9 +357,11 @@ $('#fCal').onsubmit=e=>{
   note('');
   const s=clone(scales.find(x=>x.id===openId));s.cal=s.cal||[];
   const nid='c'+Date.now().toString(36);
-  s.cal.push({id:nid,data:f.data.value,ei,ef,e1:f.e1.value.trim(),e2:f.e2.value.trim(),obs:f.obs.value.trim()});
+  s.cal.push({id:nid,data:f.data.value,os:f.os.value.trim(),ei,ef,e1:f.e1.value.trim(),e2:f.e2.value.trim(),obs:f.obs.value.trim()});
   const e1=f.e1.value,e2=f.e2.value;f.reset();f.data.value=iso(new Date());f.e1.value=e1;f.e2.value=e2;
-  addCal(s,s.cal[s.cal.length-1]).then(r=>note(msgEnvio(r)));
+  const nc=s.cal[s.cal.length-1];
+  $('#calAv').innerHTML=fora(s.tipo,ef)?avForaFinal(txtCurto(s,nc),s.tipo):TOL[s.tipo]?`<div class='av g'><b>Calibração registrada. Erro final dentro da tolerância (${tolTxt(s.tipo)}).</b></div>`:'';
+  addCal(s,nc).then(r=>note(msgEnvio(r)));
 };
 $('#dSc').addEventListener('click',e=>{
   const pb=e.target.closest('[data-pdf]');if(pb){const s=scales.find(x=>x.id===openId),c=s&&s.cal.find(x=>x.id===pb.dataset.pdf);if(c)savePdf(s,c);return}
@@ -346,12 +380,12 @@ render();
 /* ===== Calibração guiada · balança de fluxo e dosadora ===== */
 const pn=v=>parseFloat(String(v==null?'':v).replace(',','.'));
 const fmt=(v,d=3)=>isFinite(v)?Number(v).toLocaleString('pt-BR',{maximumFractionDigits:d}):'-';
-const FL={e1:['Executante 1'],e2:['Executante 2'],b04:['B-04 · Pulsos por metro','pulsos/m'],c02:['C-02 · Tempo de volta','s'],c05:['C-05 · Comprimento da mesa','m'],c08:['C-08 · Peso padrão','kg'],d02:['D-02 · Fator de correção'],d06:['D-06 · Pulsos por volta','pulsos'],t1:['Tempo encontrado','s'],tv:['Tempo de volta aferido','s'],tv1:['Tempo 1','s'],tv2:['Tempo 2','s'],tv3:['Tempo 3','s'],d06n:['Novo D-06 (Input Belt)','pulsos'],k1:['Tara 01'],k2:['Tara 02'],d02n:['Novo D-02 · Fator de correção'],t2:['Tempo encontrado','s'],p1:['Linha 1 · Pedido','t/h'],s1:['Linha 1 · Tempo de volta','s'],p2:['Linha 2 · Pedido','t/h'],s2:['Linha 2 · Tempo de volta','s'],p3:['Linha 1 · Pedido','t/h'],s3:['Linha 1 · Tempo de volta','s'],p4:['Linha 2 · Pedido','t/h'],s4:['Linha 2 · Tempo de volta','s']};
-const TXT=['e1','e2','k1','k2','data'];
+const FL={os:['Número da O.S.'],e1:['Executante 1'],e2:['Executante 2'],b04:['B-04 · Pulsos por metro','pulsos/m'],c02:['C-02 · Tempo de volta','s'],c05:['C-05 · Comprimento da mesa','m'],c08:['C-08 · Peso padrão','kg'],d02:['D-02 · Fator de correção'],d06:['D-06 · Pulsos por volta','pulsos'],t1:['Tempo encontrado','s'],tv:['Tempo de volta aferido','s'],tv1:['Tempo 1','s'],tv2:['Tempo 2','s'],tv3:['Tempo 3','s'],d06n:['Novo D-06 (Input Belt)','pulsos'],k1:['Tara 01'],k2:['Tara 02'],d02n:['Novo D-02 · Fator de correção'],t2:['Tempo encontrado','s'],p1:['Linha 1 · Pedido','t/h'],s1:['Linha 1 · Tempo de volta','s'],p2:['Linha 2 · Pedido','t/h'],s2:['Linha 2 · Tempo de volta','s'],p3:['Linha 1 · Pedido','t/h'],s3:['Linha 1 · Tempo de volta','s'],p4:['Linha 2 · Pedido','t/h'],s4:['Linha 2 · Tempo de volta','s']};
+const TXT=['os','e1','e2','k1','k2','data'];
 const CK=['Balança voltada para gravimétrico','Teclado desabilitado','Pesos guardados','Totalização restaurada','Balança liberada para operação'];
 const WS={
-  flu:[{id:'dados',t:'Dados iniciais',f:['e1','e2','b04','c02','c05','c08','d02','d06']},{id:'ei',t:'Erro inicial',f:['t1']},{id:'vol',t:'Volumétrico',f:['tv1','tv2','tv3']},{id:'belt',t:'Input Belt',f:['d06n']},{id:'tara',t:'Tara',f:['k1','k2']},{id:'chk',t:'Check weight',f:['d02n']},{id:'ef',t:'Erro final',f:['t2']},{id:'fim',t:'Encerramento',f:[]}],
-  dos:[{id:'dados',t:'Dados iniciais',f:['e1','e2','b04','c02','c05','c08','d02','d06']},{id:'ei',t:'Erro inicial',f:['p1','s1','p2','s2']},{id:'vol',t:'Volumétrico',f:['tv1','tv2','tv3']},{id:'belt',t:'Input Belt',f:['d06n']},{id:'tara',t:'Tara',f:['k1','k2']},{id:'chk',t:'Check weight',f:['d02n']},{id:'ef',t:'Erro final',f:['p3','s3','p4','s4']},{id:'fim',t:'Encerramento',f:[]}]};
+  flu:[{id:'dados',t:'Dados iniciais',f:['os','e1','e2','b04','c02','c05','c08','d02','d06']},{id:'ei',t:'Erro inicial',f:['t1']},{id:'vol',t:'Volumétrico',f:['tv1','tv2','tv3']},{id:'belt',t:'Input Belt',f:['d06n']},{id:'tara',t:'Tara',f:['k1','k2']},{id:'chk',t:'Check weight',f:['d02n']},{id:'ef',t:'Erro final',f:['t2']},{id:'fim',t:'Encerramento',f:[]}],
+  dos:[{id:'dados',t:'Dados iniciais',f:['os','e1','e2','b04','c02','c05','c08','d02','d06']},{id:'ei',t:'Erro inicial',f:['p1','s1','p2','s2']},{id:'vol',t:'Volumétrico',f:['tv1','tv2','tv3']},{id:'belt',t:'Input Belt',f:['d06n']},{id:'tara',t:'Tara',f:['k1','k2']},{id:'chk',t:'Check weight',f:['d02n']},{id:'ef',t:'Erro final',f:['p3','s3','p4','s4']},{id:'fim',t:'Encerramento',f:[]}]};
 const WI={
   dados:'Informe os parâmetros atuais do módulo (coleta de parâmetros).',
   ei:{flu:'COM OS PESOS. Zere o totalizador da balança e cronometre o tempo até o totalizador indicar o valor em destaque abaixo. Informe o tempo encontrado.',dos:'COM OS PESOS. Afira o tempo de volta e informe o pedido e o tempo de volta de cada linha.'},
@@ -375,7 +409,7 @@ function calc(w){
   return o;
 }
 const SWK=['t1','t2','s1','s2','s3','s4'];
-const inp=k=>`<label>${FL[k][0]}${FL[k][1]?' ('+FL[k][1]+')':''}<input data-k='${k}' ${k[0]==='e'?'':'inputmode=decimal'} value='${esc(w[k])}' autocomplete='off'>${SWK.includes(k)?`<button type='button' class='btn swb' data-sw='${k}'>Cronometrar</button>`:''}</label>`;
+const inp=k=>`<label>${FL[k][0]}${FL[k][1]?' ('+FL[k][1]+')':''}<input data-k='${k}' ${k[0]==='e'||k==='os'?'':'inputmode=decimal'}${k==='os'?" maxlength='30'":''} value='${esc(w[k])}' autocomplete='off'>${SWK.includes(k)?`<button type='button' class='btn swb' data-sw='${k}'>Cronometrar</button>`:''}</label>`;
 const volCard=()=>`<div class='swc'><div class='swd' data-swd>0,00 s</div><button type='button' class='btn pri swbig' data-sw='vol'>Iniciar tomada 1</button><p class='small mut' style='text-align:center'>Afira 3 voltas da correia. O app usa a média dos 3 tempos.</p></div><div class='f3'>${['tv1','tv2','tv3'].map(inp).join('')}</div><button type='button' class='lnk' data-swclr>Limpar os 3 tempos</button>`;
 /* cronômetro: marca pela hora do aparelho, então continua certo mesmo se a tela apagar */
 let sw=null,swLast=0;
@@ -418,19 +452,36 @@ function wLive(){
   const rows=a=>R(a.map(i=>`<span>Linha ${i%2+1}: fluxo encontrado <b>${fmt(c.f[i])} t/h</b> · erro <b>${fmt(c.e[i])} %</b></span>`).join(''));
   let h='';
   if(id==='dados')h=R(`<span>Comprimento da correia = D-06 ÷ B-04: <b>${fmt(c.cor,4)} m</b></span><span>Velocidade = correia ÷ tempo de volta: <b>${fmt(c.vel,4)} m/s</b></span>`);
-  else if(id==='ei')h=dos?rows([0,1])+R(`<span>Erro inicial (média): <b>${fmt(c.ei)} %</b></span>`):ex+R(`<span>Erro inicial: <b>${fmt(c.ei)} %</b></span>`);
+  else if(id==='ei'){
+    h=dos?rows([0,1])+R(`<span>Erro inicial (média): <b>${fmt(c.ei)} %</b></span>`):ex+R(`<span>Erro inicial: <b>${fmt(c.ei)} %</b></span>`);
+    const ok=dentro(w.tp,c.ei),nb=$('#wBody [data-wn]');if(nb)nb.textContent=ok?'Ir para o encerramento':'Próximo';
+    if(isFinite(c.ei))h+=ok?`<div class='av g'><b>Erro inicial dentro da tolerância (${tolTxt(w.tp)}).</b><span>Não é necessário calibrar. Toque em “Ir para o encerramento” para emitir o relatório.</span></div>`:`<div class='av r'><b>Erro inicial fora da tolerância (${tolTxt(w.tp)}).</b><span>Siga com a calibração.</span></div>`;
+  }
   else if(id==='vol')h=R(c.tvs.length===3?`<span>Tempo de volta (média de 3): <b class='bn'>${fmt(c.tv,3)} s</b></span><span>Diferença em relação ao C-02: <b>${fmt(c.dv)} %</b></span>`:`<span>Tempos registrados: <b>${c.tvs.length} de 3</b></span>`);
   else if(id==='belt')h=R(`<span>Novo B-04 = novo D-06 ÷ comprimento da correia: <b class='bn'>${fmt(c.b04n)} pulsos/m</b></span>`);
   else if(id==='chk')h=R(`<span>Variação do D-02: <b>${fmt(c.dd)} %</b></span>`);
-  else if(id==='ef')h=dos?rows([2,3])+R(`<span>Erro final (média): <b>${fmt(c.ef)} %</b></span>`):ex+R(`<span>Erro final: <b>${fmt(c.ef)} %</b></span>`);
+  else if(id==='ef'){
+    h=dos?rows([2,3])+R(`<span>Erro final (média): <b>${fmt(c.ef)} %</b></span>`):ex+R(`<span>Erro final: <b>${fmt(c.ef)} %</b></span>`);
+    if(isFinite(c.ef))h+=dentro(w.tp,c.ef)?`<div class='av g'><b>Erro final dentro da tolerância (${tolTxt(w.tp)}).</b></div>`:avForaFinal(msgFora(c),w.tp);
+  }
   el.innerHTML=h;
+}
+function msgFora(c){
+  const s=scales.find(x=>x.id===wsid)||{};
+  return 'Olá, Jeferson. A '+(TPN[w.tp]||'balança').toLowerCase()+' '+(s.nome||'')+' ficou com erro final de '+fmt(c.ef)+' % na calibração de '+fd(w.data)+', fora da tolerância de '+tolTxt(w.tp)+'.'+(w.os?' O.S. '+w.os+'.':'')+' Executantes: '+(w.e1||'')+' e '+(w.e2||'')+'. Inspeção visual: ';
 }
 function wSum(){
   const c=calc(w),dos=w.tp==='dos',m=dos?' (média)':'';
-  const rw=[['Erro inicial',fmt(c.ei)+' %'+m],['Erro final',fmt(c.ef)+' %'+m],['Comprimento da correia',fmt(c.cor,4)+' m'],['Tempo de volta aferido (média)',fmt(c.tv,3)+' s'],['Tempos de volta (3 tomadas)',[w.tv1,w.tv2,w.tv3].join(' / ')+' s'],['Novo B-04',fmt(c.b04n)+' pulsos/m'],['Novo D-06',w.d06n+' pulsos'],['Novo D-02',w.d02n+' ('+fmt(c.dd)+' %)'],['Taras',w.k1+' / '+w.k2],['Executantes',w.e1+' e '+w.e2]];
+  if(w.pulo){
+    const rp=[['Erro inicial',fmt(c.ei)+' %'+m],['Tolerância',tolTxt(w.tp)],['Calibração','Não necessária (sem ajuste)'],['Comprimento da correia',fmt(c.cor,4)+' m'],['O.S.',w.os||'-'],['Executantes',w.e1+' e '+w.e2]];
+    if(!dos)rp.splice(3,0,['Tempo encontrado',fmt(pn(w.t1))+' s em '+fmt(c.T)+' s calculados']);
+    return `<div class='av g'><b>Erro inicial dentro do limite de tolerância (${tolTxt(w.tp)}).</b><span>A calibração não é necessária. Confirme o encerramento e finalize para emitir o relatório.</span></div><table class='sm'>${rp.map(r=>`<tr><td>${r[0]}</td><td>${esc(r[1])}</td></tr>`).join('')}</table><div><p class='small mut'>Confirme o encerramento:</p>${CK.map((t,i)=>`<label class='chk'><input type='checkbox' data-ck='${i}'${w.ck&&w.ck[i]?' checked':''}>${t}</label>`).join('')}</div><label class='small mut' style='display:flex;flex-direction:column;gap:3px'>Observações<textarea data-k='obs' maxlength='500'>${esc(w.obs)}</textarea></label>`;
+  }
+  const fo=fora(w.tp,c.ef);
+  const rw=[['Erro inicial',fmt(c.ei)+' %'+m],['Erro final',fmt(c.ef)+' %'+m],['Comprimento da correia',fmt(c.cor,4)+' m'],['Tempo de volta aferido (média)',fmt(c.tv,3)+' s'],['Tempos de volta (3 tomadas)',[w.tv1,w.tv2,w.tv3].join(' / ')+' s'],['Novo B-04',fmt(c.b04n)+' pulsos/m'],['Novo D-06',w.d06n+' pulsos'],['Novo D-02',w.d02n+' ('+fmt(c.dd)+' %)'],['Taras',w.k1+' / '+w.k2],['O.S.',w.os||'-'],['Executantes',w.e1+' e '+w.e2]];
   if(!dos)rw.splice(2,0,['Totalizar em 2 voltas',fmt(c.tons,4)+' t em '+fmt(c.T)+' s'],['Tempo encontrado inicial / final',fmt(pn(w.t1))+' s / '+fmt(pn(w.t2))+' s']);
-  const ck=CK.map((t,i)=>`<label class='chk'><input type='checkbox' data-ck='${i}'${w.ck&&w.ck[i]?' checked':''}>${t}</label>`).join('');
-  return `<table class='sm'>${rw.map(r=>`<tr><td>${r[0]}</td><td>${esc(r[1])}</td></tr>`).join('')}</table><div><p class='small mut'>Confirme o encerramento:</p>${ck}</div><label class='small mut' style='display:flex;flex-direction:column;gap:3px'>Observações<textarea data-k='obs' maxlength='500'>${esc(w.obs)}</textarea></label>`;
+  const ck=CK.map((t,i)=>`<label class='chk'><input type='checkbox' data-ck='${i}'${w.ck&&w.ck[i]?' checked':''}>${t}</label>`).join('')+(fo?CKF.map((t,i)=>`<label class='chk'><input type='checkbox' data-cf='${i}'${w.cf&&w.cf[i]?' checked':''}>${t}</label>`).join(''):'');
+  return `${fo?avForaFinal(msgFora(c),w.tp):''}<table class='sm'>${rw.map(r=>`<tr><td>${r[0]}</td><td>${esc(r[1])}</td></tr>`).join('')}</table><div><p class='small mut'>Confirme o encerramento:</p>${ck}</div><label class='small mut' style='display:flex;flex-direction:column;gap:3px'>Observações<textarea data-k='obs' maxlength='500'${fo?" placeholder='Descreva o que foi visto na inspeção visual'":''}>${esc(w.obs)}</textarea></label>`;
 }
 function wRender(){
   swStop(false);swLast=0;
@@ -438,34 +489,49 @@ function wRender(){
   let h=`<div class='sh'><div><h2>${esc(s.nome)}</h2><p class='stp'>Balança ${w.tp==='dos'?'dosadora':'de fluxo'} · ${st.t} · etapa ${i+1} de ${L.length}</p></div><button type='button' class='x' data-wx aria-label='Fechar'>×</button></div>`;
   if(id!=='fim'){
     const t=WI[id];
-    h+=`<p>${typeof t==='string'?t:t[w.tp]}</p>${id==='chk'?`<p class='hint'>Peso padrão: ${esc(w.c08)} kg. Lembre-se de colocar o peso na balança antes do check weight.</p>`:''}<div id='wLive' style='display:flex;flex-direction:column;gap:8px'></div><div class='f'>${id==='dados'?`<label class='w'>Data da calibração<input type='date' data-k='data' value='${esc(w.data)}'></label>`:''}${id==='vol'?'':st.f.map(inp).join('')}</div>${id==='vol'?volCard():''}`;
+    h+=`<p>${typeof t==='string'?t:t[w.tp]}</p>${id==='chk'?`<p class='hint'>Peso padrão: ${esc(w.c08)} kg. Lembre-se de colocar o peso na balança antes do check weight.</p>`:''}<div id='wLive' style='display:flex;flex-direction:column;gap:8px'></div><div class='f'>${id==='dados'?`<label>Data da calibração<input type='date' data-k='data' value='${esc(w.data)}'></label>`:''}${id==='vol'?'':st.f.map(inp).join('')}</div>${id==='vol'?volCard():''}`;
   }else h+=wSum();
   h+=`<p class='small' id='wErr' style='color:var(--r)'></p><div class='wb'>${i>0?`<button class='btn' data-wb>Voltar</button>`:''}<button class='btn pri' data-wn>${id==='fim'?'Finalizar e salvar':'Próximo'}</button></div>`;
   $('#wBody').innerHTML=h;wLive();swPaint();
 }
 function wNext(){
   const L=WS[w.tp],i=w.step,id=L[i].id,bad=L[i].f.concat(id==='dados'?['data']:[]).find(k=>!okf(k));
-  if(bad){$('#wErr').textContent='Preencha corretamente: '+(FL[bad]?FL[bad][0]:'data')+'.';return}
+  if(bad){$('#wErr').textContent='Preencha corretamente: '+(FL[bad]?FL[bad][0]:'data').replace(/\.$/,'')+'.';return}
   if(id==='fim'){
     if(!(w.ck&&w.ck.filter(Boolean).length===CK.length)){$('#wErr').textContent='Marque todos os itens do encerramento.';return}
+    if(!w.pulo&&fora(w.tp,calc(w).ef)&&!(w.cf&&w.cf.filter(Boolean).length===CKF.length)){$('#wErr').textContent='Erro final fora da tolerância: marque a inspeção visual e a comunicação ao inspetor.';return}
     wFinish();return;
+  }
+  if(id==='ei'){
+    if(dentro(w.tp,calc(w).ei)){w.pulo=1;w.step=L.findIndex(x=>x.id==='fim');wSave();wRender();$('#dWiz').scrollTop=0;return}
+    delete w.pulo;
   }
   if(id==='vol')w.tv=String(+calc(w).tv.toFixed(3)).replace('.',',');
   w.step++;wSave();wRender();$('#dWiz').scrollTop=0;
 }
 function wFinish(){
-  const s=clone(scales.find(x=>x.id===wsid)),c=calc(w),id='c'+Date.now().toString(36),rel=clone(w);
+  const s=clone(scales.find(x=>x.id===wsid)),id='c'+Date.now().toString(36),rel=clone(w),pu=!!w.pulo;
   delete rel.step;delete rel.v;
-  rel.res=clone({cor:c.cor,vel:c.vel,Q:c.Q,T:c.T,tons:c.tons,tv:c.tv,b04n:c.b04n,dd:c.dd,dv:c.dv,e:c.e,f:c.f});
+  if(pu){
+    /* sem calibração: a balança fica como foi encontrada, então o erro final é o próprio erro inicial */
+    ['tv','tv1','tv2','tv3','d06n','k1','k2','d02n','cf'].forEach(k=>delete rel[k]);
+    if(rel.tp==='dos'){rel.p3=rel.p1;rel.s3=rel.s1;rel.p4=rel.p2;rel.s4=rel.s2}else rel.t2=rel.t1;
+  }
+  const c=calc(rel),fo=!pu&&fora(rel.tp,c.ef);
+  if(!fo)delete rel.cf;
+  rel.res=clone(pu?{cor:c.cor,vel:c.vel,Q:c.Q,T:c.T,tons:c.tons,e:c.e,f:c.f}:{cor:c.cor,vel:c.vel,Q:c.Q,T:c.T,tons:c.tons,tv:c.tv,b04n:c.b04n,dd:c.dd,dv:c.dv,e:c.e,f:c.f});
   s.cal=s.cal||[];
-  s.cal.push({id,data:w.data,ei:+c.ei.toFixed(4),ef:+c.ef.toFixed(4),e1:w.e1.trim(),e2:w.e2.trim(),obs:(w.obs||'').trim(),rel});
+  s.cal.push({id,data:w.data,os:(w.os||'').trim(),ei:+c.ei.toFixed(4),ef:+c.ef.toFixed(4),e1:w.e1.trim(),e2:w.e2.trim(),obs:(w.obs||'').trim(),rel});
   dropDraft(s.id);wDone=true;wLast=id;const pr=addCal(s,s.cal[s.cal.length-1]);
-  $('#wBody').innerHTML=`<div class='sh'><h2>Calibração salva</h2><button type='button' class='x' data-wclose aria-label='Fechar'>×</button></div><div class='res'><span>Erro inicial: <b>${fmt(c.ei)} %</b></span><span>Erro final: <b>${fmt(c.ef)} %</b></span></div><p class='small mut' id='wEnv'>Enviando ao servidor…</p><div class='wb'><button class='btn pri' data-wpdf>Baixar PDF</button><button class='btn' data-wshare>Compartilhar</button></div><div class='wb'><a class='btn' href='https://wa.me/5531982613138?text=${encodeURIComponent(txtCurto(s,s.cal[s.cal.length-1])).replace(/'/g,'%27')}' target='_blank' rel='noopener'>WhatsApp (resumo)</a><button class='btn' data-wclose>Fechar</button></div>`;
+  const nc=s.cal[s.cal.length-1],tl=tolTxt(rel.tp);
+  const av=pu?`<div class='av g'><b>Erro inicial dentro da tolerância (${tl}).</b><span>Calibração não necessária.</span></div>`:fo?`<div class='av r'><b>Erro final fora da tolerância (${tl}).</b><span>A balança fica com o farol vermelho. Refaça a inspeção visual e comunique o inspetor pelo WhatsApp.</span></div>`:`<div class='av g'><b>Erro final dentro da tolerância (${tl}).</b></div>`;
+  $('#wBody').innerHTML=`<div class='sh'><h2>${pu?'Relatório salvo':'Calibração salva'}</h2><button type='button' class='x' data-wclose aria-label='Fechar'>×</button></div><div class='res'><span>Erro inicial: <b>${fmt(c.ei)} %</b></span>${pu?'<span>Calibração: <b>não necessária</b></span>':`<span>Erro final: <b>${fmt(c.ef)} %</b></span>`}</div>${av}<p class='small mut' id='wEnv'>Enviando ao servidor…</p><div class='wb'><button class='btn pri' data-wpdf>Baixar PDF</button><button class='btn' data-wshare>Compartilhar</button></div><div class='wb'><a class='btn${fo?' pri':''}' href='${waHref(txtCurto(s,nc))}' target='_blank' rel='noopener'>${fo?'Comunicar o inspetor no WhatsApp':'WhatsApp (resumo)'}</a><button class='btn' data-wclose>Fechar</button></div>`;
   pr.then(r=>{const e=$('#wEnv');if(e)e.textContent=msgEnvio(r)});
 }
 $('#wBody').addEventListener('input',e=>{
   const t=e.target;
   if(t.dataset.ck!=null){w.ck=w.ck||[];w.ck[+t.dataset.ck]=t.checked;return}
+  if(t.dataset.cf!=null){w.cf=w.cf||[];w.cf[+t.dataset.cf]=t.checked;return}
   const k=t.dataset.k;if(k){w[k]=t.value;wLive();if(/^tv[123]$/.test(k))swPaint();const er=$('#wErr');if(er)er.textContent=''}
 });
 $('#wBody').addEventListener('click',e=>{
@@ -475,7 +541,7 @@ $('#wBody').addEventListener('click',e=>{
   if(t.closest('[data-wx],[data-wclose]')){$('#dWiz').close();return}
   if(t.closest('[data-wpdf]')){const s=scales.find(x=>x.id===wsid);savePdf(s,s.cal.find(x=>x.id===wLast));return}
   if(t.closest('[data-wshare]')){const s=scales.find(x=>x.id===wsid),c=s.cal.find(x=>x.id===wLast),p=buildPdf(s,c);if(p){const f=new File([p.d.output('blob')],p.name,{type:'application/pdf'});if(navigator.canShare&&navigator.canShare({files:[f]}))navigator.share({files:[f],title:p.name}).catch(()=>{});else saveFile(p.name,f)}return}
-  if(t.closest('[data-wb]')){w.step--;wRender();return}
+  if(t.closest('[data-wb]')){const L=WS[w.tp];w.step=w.pulo&&L[w.step].id==='fim'?L.findIndex(x=>x.id==='ei'):w.step-1;wRender();$('#dWiz').scrollTop=0;return}
   if(t.closest('[data-wn]'))wNext();
 });
 $('#dWiz').addEventListener('close',()=>{swStop(false);if(w&&!wDone&&Object.keys(w).length>4)wSave();w=null});
@@ -487,22 +553,34 @@ function buildPdf(s,c){
   const pg=()=>{if(y>272){d.addPage();y=18}};
   const H=t=>{pg();y+=3;d.setFont('helvetica','bold');d.setFontSize(12);d.text(t,15,y);y+=2;d.line(15,y,195,y);y+=6};
   const R=(a,b)=>{pg();d.setFontSize(10.5);d.setFont('helvetica','bold');d.text(a,15,y);d.setFont('helvetica','normal');d.text(String(b),95,y);y+=6};
+  const S=(t,ok)=>{d.setFontSize(10.5);d.setFont('helvetica','bold');d.setTextColor.apply(d,ok?[35,132,74]:[201,47,39]);d.splitTextToSize(t,180).forEach(l=>{pg();d.text(l,15,y);y+=5.5});d.setTextColor(0,0,0);y+=1};
   const lin=a=>a.forEach(i=>{R('Linha '+(i%2+1)+' - pedido / tempo de volta',r['p'+(i+1)]+' t/h / '+r['s'+(i+1)]+' s');R('   fluxo encontrado / erro',fmt(x.f[i])+' t/h / '+fmt(x.e[i])+' %')});
   d.setFont('helvetica','bold');d.setFontSize(16);d.text('Relatório de calibração - Balança'+(dos?' dosadora':r.tp==='flu'?' de fluxo':''),15,y);y+=4;
-  H('Identificação');R('Balança',s.nome);R('Local',s.local||'-');R('Data',fd(c.data));R('Executantes',c.e1+' e '+c.e2);
-  if(!full){H('Resultado');R('Erro inicial',fmt(c.ei)+' %');R('Erro final',fmt(c.ef)+' %');R('Tipo de registro','Lançamento manual')}
+  H('Identificação');R('Balança',s.nome);R('Local',s.local||'-');R('Data',fd(c.data));R('O.S.',osDe(c)||'-');R('Executantes',c.e1+' e '+c.e2);
+  const tp=r.tp||s.tipo,pu=!!r.pulo,mm=dos&&full?' (média)':'';
+  H('Resultado');R('Erro inicial'+mm,fmt(c.ei)+' %');
+  if(pu)R('Calibração','Não necessária (sem ajuste)');else R('Erro final'+mm,fmt(c.ef)+' %');
+  if(TOL[tp])R('Tolerância',tolTxt(tp));
+  if(!full)R('Tipo de registro','Lançamento manual');
+  if(TOL[tp]){
+    if(pu)S('Erro inicial dentro do limite de tolerância. Calibração não necessária.',1);
+    else if(fora(tp,c.ef)){S('Erro final fora do limite de tolerância. Farol da balança mantido em vermelho até nova calibração dentro da tolerância.',0);if(r.cf)CKF.forEach((t,i)=>R(t,r.cf[i]?'Sim':'-'))}
+    else S('Erro final dentro do limite de tolerância.',1);
+  }
   if(full){
   H('Coleta de parâmetros');R('B-04 - Pulsos por metro',r.b04);R('C-02 - Tempo de volta (s)',r.c02);R('C-05 - Comprimento da mesa (m)',r.c05);R('C-08 - Peso padrão (kg)',r.c08);R('D-02 - Fator de correção',r.d02);R('D-06 - Pulsos por volta',r.d06);R('Tamanho da correia (D-06 / B-04)',fmt(x.cor!=null?x.cor:pn(r.cor),4)+' m');
   H('Cálculo');R('Velocidade (correia / tempo de volta)',fmt(x.vel!=null?x.vel:pn(r.vel),4)+' m/s');if(!dos)R('Fluxo calculado (1 hora)',fmt(x.Q)+' t/h');
   if(!dos){R('Tempo de 2 voltas',fmt(x.T)+' s');R('Totalização esperada',fmt(x.tons,4)+' t')}
   H('Erro inicial');
   if(dos){lin([0,1]);R('Erro inicial (média)',fmt(c.ei)+' %')}else{R('Tempo calculado / encontrado',fmt(x.T)+' s / '+r.t1+' s');R('Erro inicial',fmt(c.ei)+' %')}
+  if(!pu){
   H('Calibração');
   if(r.tv1){R('Tempo de volta - 3 tomadas',r.tv1+' / '+r.tv2+' / '+r.tv3+' s');R('Tempo de volta aferido (média)',fmt(x.tv!=null?x.tv:pn(r.tv),3)+' s');if(x.dv!=null&&isFinite(x.dv))R('Diferença em relação ao C-02',fmt(x.dv)+' %')}
   else if(r.tv)R('Tempo de volta aferido',r.tv+' s');
   R('Novo D-06 (Input Belt)',r.d06n);R('Novo B-04',fmt(x.b04n)+' pulsos/m');R('Tara 01',r.k1);R('Tara 02',r.k2);R('Novo D-02 (Check weight)',r.d02n);R('Variação do D-02',fmt(x.dd)+' %');
   H('Erro final');
   if(dos){lin([2,3]);R('Erro final (média)',fmt(c.ef)+' %')}else{R('Tempo calculado / encontrado',fmt(x.T)+' s / '+r.t2+' s');R('Erro final',fmt(c.ef)+' %')}
+  }
   if(r.ck){H('Encerramento');CK.forEach((t,i)=>R(t,r.ck[i]?'OK':'-'))}
   }
   if(c.obs){H('Observações');d.setFont('helvetica','normal');d.setFontSize(10.5);d.splitTextToSize(c.obs,180).forEach(t=>{pg();d.text(t,15,y);y+=5.5})}
@@ -538,6 +616,15 @@ function applyOp(list,o){
   }
   return list;
 }
+/* corrige registros que a planilha em português converteu (datas e números com ponto) */
+function normCal(c){
+  if(c.data&&!/^\d{4}-\d\d-\d\d$/.test(c.data)){const t=Date.parse(c.data);if(!isNaN(t))c.data=iso(new Date(t))}
+  const r=c.rel,x=r&&r.res,n=v=>parseFloat(String(v==null?'':v).replace(',','.'));
+  if(x&&r.tp==='dos'&&x.e&&x.e.length===4){c.ei=(x.e[0]+x.e[1])/2;c.ef=(x.e[2]+x.e[3])/2}
+  else if(x&&r.tp==='flu'&&x.T&&n(r.t1)>0&&n(r.t2)>0){c.ei=(n(r.t1)/x.T-1)*100;c.ef=(n(r.t2)/x.T-1)*100}
+  return c;
+}
+function normBase(l){(l||[]).forEach(s=>(s.cal||[]).forEach(normCal));return l||[]}
 function recompute(){scales=getOut().reduce((l,o)=>applyOp(l,o),clone(base))}
 
 const ERR={'codigo-invalido':'Código de acesso inválido. Toque em "Acesso" e reconecte.','troque-codigo-admin':'No script do servidor, troque o CODIGO_ADMIN antes de usar o acesso de administrador.','sem-permissao':'Seu acesso não permite esta ação.','balanca-inexistente':'A balança foi excluída pelo administrador; o registro não foi salvo.','dados-incompletos':'Dados incompletos: o registro não foi salvo.','resposta-invalida':'O servidor respondeu de forma inesperada. Confira o endereço e se a implantação está liberada para "Qualquer pessoa".'};
@@ -571,7 +658,7 @@ function sync(){
       setOut(getOut().filter(x=>x.oid!==o.oid));
     }
     if(!stop){
-      try{const j=await api('list');base=j.scales||[];lastSync=Date.now();novidades()}
+      try{const j=await api('list');base=normBase(j.scales);lastSync=Date.now();novidades()}
       catch(e){if(e.net)stop='net';else note(errMsg(e))}
     }
     if(stop==='net'&&getOut().length)ls.set('calib.offq',1);
@@ -611,11 +698,21 @@ function setSync(busy){
 
 /* e-mail do relatório (o servidor envia) */
 const TPN={dos:'Balança dosadora',flu:'Balança de fluxo'};
-function txtCurto(s,c){return (TPN[s.tipo]||'Balança')+' '+s.nome+': calibração de '+fd(c.data)+'. Erro inicial '+fmt(c.ei)+'%, final '+fmt(c.ef)+'%. Executantes: '+c.e1+' e '+c.e2+'.'}
+const avForaFinal=(msg,tp)=>`<div class='av r'><b>Erro final fora da tolerância${tp?' ('+tolTxt(tp)+')':''}.</b><span>Faça novamente a inspeção visual da balança e comunique o inspetor pelo WhatsApp. O relatório pode ser registrado, mas a balança fica com o farol vermelho até uma nova calibração dentro da tolerância.</span><a class='btn pri' href='${waHref(msg)}' target='_blank' rel='noopener'>Comunicar o inspetor no WhatsApp</a></div>`;
+const CKF=['Inspeção visual da balança refeita','Inspetor comunicado pelo WhatsApp'];
+function sitTxt(s,c){
+  const tp=(c.rel&&c.rel.tp)||s.tipo;if(!TOL[tp])return'';
+  if(pulou(c))return'dentro da tolerância ('+tolTxt(tp)+'), calibração não necessária';
+  return(fora(tp,c.ef)?'FORA da tolerância':'dentro da tolerância')+' ('+tolTxt(tp)+')';
+}
+function txtCurto(s,c){
+  const st=sitTxt(s,c);
+  return (TPN[s.tipo]||'Balança')+' '+s.nome+': calibração de '+fd(c.data)+'. '+(pulou(c)?'Erro inicial '+fmt(c.ei)+'%, '+st+'.':'Erro inicial '+fmt(c.ei)+'%, final '+fmt(c.ef)+'%'+(st?', '+st:'')+'.')+(osDe(c)?' O.S. '+osDe(c)+'.':'')+' Executantes: '+c.e1+' e '+c.e2+'.';
+}
 function payload(s,c){
   const p=buildPdf(s,c);if(!p)return null;
-  const L=[(TPN[s.tipo]||'Balança')+': '+s.nome,s.local?'Local: '+s.local:'','Data: '+fd(c.data),'Executantes: '+c.e1+' e '+c.e2,'Erro inicial: '+fmt(c.ei)+' %','Erro final: '+fmt(c.ef)+' %',c.obs?'Observações: '+c.obs:'','','Relatório completo em anexo (PDF).'];
-  return{filename:p.name,pdf:p.d.output('datauristring').split(',')[1],assunto:'Calibração '+s.nome+' - '+fd(c.data)+' (erro inicial '+fmt(c.ei)+'%, final '+fmt(c.ef)+'%)',resumo:L.filter(x=>x!=='').join('\n'),resumoCurto:txtCurto(s,c)};
+  const L=[(TPN[s.tipo]||'Balança')+': '+s.nome,s.local?'Local: '+s.local:'','Data: '+fd(c.data),'O.S.: '+(osDe(c)||'-'),'Executantes: '+c.e1+' e '+c.e2,'Erro inicial: '+fmt(c.ei)+' %',pulou(c)?'Calibração: não necessária (sem ajuste)':'Erro final: '+fmt(c.ef)+' %',sitTxt(s,c)?'Situação: '+sitTxt(s,c):'',c.obs?'Observações: '+c.obs:'','','Relatório completo em anexo (PDF).'];
+  return{filename:p.name,pdf:p.d.output('datauristring').split(',')[1],assunto:'Calibração '+s.nome+' - '+fd(c.data)+(pulou(c)?' (erro inicial '+fmt(c.ei)+'% - dentro da tolerância, sem ajuste)':' (erro inicial '+fmt(c.ei)+'%, final '+fmt(c.ef)+'%'+(fora((c.rel&&c.rel.tp)||s.tipo,c.ef)?' - FORA DA TOLERÂNCIA':'')+')'),resumo:L.filter(x=>x!=='').join('\n'),resumoCurto:txtCurto(s,c)};
 }
 function addCal(s,c){marcarVisto(c.id);return op('addCal',Object.assign({balancaId:s.id,cal:c},payload(s,c)||{}))}
 const msgEnvio=r=>({ok:'Calibração registrada no servidor. O PDF segue para o e-mail do inspetor.',fila:'Sem conexão: a calibração ficou guardada no aparelho e será enviada quando a internet voltar.',erro:'Não foi possível registrar no servidor.','sem-config':'Aparelho não conectado ao servidor.'}[r]||'');
@@ -627,7 +724,7 @@ $('#fCfg').onsubmit=async e=>{
   if(!/^https?:\/\//.test(k.url)){m.textContent='Informe o endereço completo, começando com https://';return}
   m.textContent='Conectando…';
   try{
-    const j=await api('list',{},k);
+    const j=await api('list',{},k);j.scales=normBase(j.scales);
     const old=srv();if(old&&old.url!==k.url){ls.del(SEEN)}
     ls.set(SRV,k);base=j.scales||[];lastSync=Date.now();netOk=true;ls.set(SEEN,null);novidades();recompute();persist();
     $('#dCfg').close();render();setSync(false);note('Conectado como '+(role==='admin'?'administrador':'executante')+'.');
@@ -692,13 +789,13 @@ function auth(fn){unlocked?fn():askPw(fn)}
 
 /* ===== Exportar tudo (CSV) ===== */
 async function exportCsv(){
-  const T={dos:'Dosadora',flu:'Fluxo'},S={g:'Em dia',y:'Atenção',r:'Vencida'};
+  const T={dos:'Dosadora',flu:'Fluxo'},S={g:'Em dia',y:'Atenção',r:'Vencida',t:'Fora da tolerância'};
   const q=v=>'"'+String(v==null?'':v).replace(/"/g,'""')+'"',n=v=>v==null||v===''?'':String(v).replace('.',',');
-  const rows=[['Tipo','Balança','Local','Situação atual','Data da calibração','Erro inicial (%)','Erro final (%)','Executante 1','Executante 2','Observações','Novo B04','Novo D06','Novo D02','Tara 01','Tara 02','Pendências mecânicas','Pendências operacionais']];
+  const rows=[['Tipo','Balança','Local','Situação atual','Data da calibração','O.S.','Erro inicial (%)','Erro final (%)','Resultado','Executante 1','Executante 2','Observações','Novo B04','Novo D06','Novo D02','Tara 01','Tara 02','Pendências mecânicas','Pendências operacionais']];
   scales.slice().sort((a,b)=>a.nome.localeCompare(b.nome)).forEach(s=>{
-    const base=[T[s.tipo]||'Sem categoria',s.nome,s.local||'',S[stat(s).k]],pend=[s.pm||'',s.po||''],cs=sorted(s,-1);
-    if(!cs.length)rows.push([...base,...Array(11).fill(''),...pend]);
-    cs.forEach(c=>{const r=c.rel||{},x=r.res||{};rows.push([...base,fd(c.data),n(c.ei),n(c.ef),c.e1,c.e2,c.obs||'',x.b04n!=null?n(+x.b04n.toFixed(4)):'',n(r.d06n),n(r.d02n),r.k1||'',r.k2||'',...pend])});
+    const base=[T[s.tipo]||'Sem categoria',s.nome,s.local||'',S[stat(s).q]],pend=[s.pm||'',s.po||''],cs=sorted(s,-1);
+    if(!cs.length)rows.push([...base,...Array(13).fill(''),...pend]);
+    cs.forEach(c=>{const r=c.rel||{},x=r.res||{};const tp=r.tp||s.tipo,res=!TOL[tp]?'':pulou(c)?'Calibração não necessária':fora(tp,c.ef)?'Erro final fora da tolerância':'Dentro da tolerância';rows.push([...base,fd(c.data),osDe(c),n(c.ei),n(c.ef),res,c.e1,c.e2,c.obs||'',x.b04n!=null?n(+x.b04n.toFixed(4)):'',n(r.d06n),n(r.d02n),r.k1||'',r.k2||'',...pend])});
   });
   const csv='\ufeff'+rows.map(r=>r.map(q).join(';')).join('\r\n');
   saveFile('calibracao-balancas-'+iso(new Date())+'.csv',new Blob([csv],{type:'text/csv;charset=utf-8'}));
@@ -729,7 +826,7 @@ setInterval(render,36e5);
 
 /* ===== Início ===== */
 (function(){
-  const c=ls.get(CACHE,null);if(c){base=c.base||[];setRole(c.role);lastSync=c.lastSync||null}
+  const c=ls.get(CACHE,null);if(c){base=normBase(c.base);setRole(c.role);lastSync=c.lastSync||null}
   if(location.hash.indexOf('#cfg=')===0){
     try{const k=JSON.parse(decodeURIComponent(escape(atob(location.hash.slice(5)))));
       if(k.url&&k.code){const old=srv();if(old&&old.url!==k.url){base=[];ls.del(CACHE);ls.del(SEEN)}ls.set(SRV,{url:k.url,code:k.code});if(!old||old.code!==k.code)setRole(null)}}catch(e){}
